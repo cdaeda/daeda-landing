@@ -216,14 +216,16 @@ const HeroSection = ({ className = '' }: HeroSectionProps) => {
           >
             {siteConfig.hero.secondaryCta}
           </button>
-          <button
-            onClick={() => window.dispatchEvent(new CustomEvent('openIdeate'))}
-            className="group bg-gradient-to-r from-[#F6B047] to-[#F6B047]/80 text-[#0B0F1C] px-8 py-4 rounded-full font-semibold text-sm flex items-center gap-2 hover:shadow-lg hover:scale-105 transition-all"
-          >
-            <Lightbulb size={16} strokeWidth={2.5} className="group-hover:animate-pulse" />
-            Let's Ideate!
-            <span>💡</span>
-          </button>
+          {siteConfig.ideate.showInHero && (
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent('openIdeate'))}
+              className="group bg-gradient-to-r from-[#F6B047] to-[#F6B047]/80 text-[#0B0F1C] px-8 py-4 rounded-full font-semibold text-sm flex items-center gap-2 hover:shadow-lg hover:scale-105 transition-all"
+            >
+              <Lightbulb size={16} strokeWidth={2.5} className="group-hover:animate-pulse" />
+              {siteConfig.ideate.label}
+              <span>{siteConfig.ideate.emoji}</span>
+            </button>
+          )}
         </div>
       </div>
 

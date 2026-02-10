@@ -85,6 +85,18 @@ export const siteConfig = {
     cta: 'Request a Community Sessionaaq  ',
   },
 
+  ideate: {
+    label: "Let's Ideate!",
+    emoji: '💡',
+    iconLabel: 'Ideate',
+    showInHero: true,
+    showInCommunity: true,
+    showInProof: true,
+    showInContact: true,
+    drawerTitle: "Let's Ideate!",
+    drawerSubtitle: 'Your AI brainstorming partner',
+  },
+
   proof: {
     mainStat: {
       value: '30',

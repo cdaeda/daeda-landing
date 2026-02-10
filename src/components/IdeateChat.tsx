@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Lightbulb, Send, X, ChevronRight, Loader2, CheckCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { siteConfig } from '../content.config';
 
 interface Message {
   id: string;
@@ -333,8 +334,8 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
               <Lightbulb size={20} className="text-[#0B0F1C]" strokeWidth={2.5} />
             </div>
             <div>
-              <h3 className="text-white font-semibold text-lg">Let's Ideate!</h3>
-              <p className="text-white/50 text-xs">Your AI brainstorming partner</p>
+              <h3 className="text-white font-semibold text-lg">{siteConfig.ideate.drawerTitle}</h3>
+              <p className="text-white/50 text-xs">{siteConfig.ideate.drawerSubtitle}</p>
             </div>
           </div>
           <button

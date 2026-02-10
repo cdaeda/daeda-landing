@@ -242,15 +242,17 @@ const ContactSection = ({ className = '' }: ContactSectionProps) => {
                 </div>
 
                 {/* Let's Ideate Button */}
-                <button
-                  type="button"
-                  onClick={() => window.dispatchEvent(new CustomEvent('openIdeate'))}
-                  className="group w-full bg-gradient-to-r from-white/10 to-white/5 border border-white/20 text-white py-4 rounded-xl font-semibold text-sm hover:bg-white/15 transition-all flex items-center justify-center gap-2"
-                >
-                  <Lightbulb size={16} strokeWidth={2.5} className="text-[#F6B047] group-hover:animate-pulse" />
-                  Let's Ideate with AI!
-                  <span>💡</span>
-                </button>
+                {siteConfig.ideate.showInContact && (
+                  <button
+                    type="button"
+                    onClick={() => window.dispatchEvent(new CustomEvent('openIdeate'))}
+                    className="group w-full bg-gradient-to-r from-white/10 to-white/5 border border-white/20 text-white py-4 rounded-xl font-semibold text-sm hover:bg-white/15 transition-all flex items-center justify-center gap-2"
+                  >
+                    <Lightbulb size={16} strokeWidth={2.5} className="text-[#F6B047] group-hover:animate-pulse" />
+                    {siteConfig.ideate.label.replace('!', ' with AI!')}
+                    <span>{siteConfig.ideate.emoji}</span>
+                  </button>
+                )}
               </form>
             )}
           </div>

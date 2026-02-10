@@ -137,14 +137,16 @@ const ProofSection = ({ className = '' }: ProofSectionProps) => {
         </div>
 
         {/* Let's Ideate Button */}
-        <button
-          onClick={() => window.dispatchEvent(new CustomEvent('openIdeate'))}
-          className="group mt-12 bg-gradient-to-r from-[#F6B047] to-[#F6B047]/80 text-[#0B0F1C] px-8 py-4 rounded-full font-semibold text-sm hover:shadow-lg hover:scale-105 transition-all duration-300 flex items-center gap-2"
-        >
-          <Lightbulb size={18} strokeWidth={2.5} className="group-hover:animate-pulse" />
-          Let's Ideate!
-          <span className="text-lg">💡</span>
-        </button>
+        {siteConfig.ideate.showInProof && (
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('openIdeate'))}
+            className="group mt-12 bg-gradient-to-r from-[#F6B047] to-[#F6B047]/80 text-[#0B0F1C] px-8 py-4 rounded-full font-semibold text-sm hover:shadow-lg hover:scale-105 transition-all duration-300 flex items-center gap-2"
+          >
+            <Lightbulb size={18} strokeWidth={2.5} className="group-hover:animate-pulse" />
+            {siteConfig.ideate.label}
+            <span className="text-lg">{siteConfig.ideate.emoji}</span>
+          </button>
+        )}
       </div>
     </section>
   );

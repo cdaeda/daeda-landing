@@ -142,14 +142,16 @@ const CommunitySection = ({ className = '' }: CommunitySectionProps) => {
           >
             {siteConfig.community.cta}
           </button>
-          <button
-            onClick={() => window.dispatchEvent(new CustomEvent('openIdeate'))}
-            className="group bg-gradient-to-r from-white/20 to-white/10 text-white border border-white/30 px-8 py-4 rounded-full font-semibold text-sm flex items-center gap-2 hover:bg-white/20 hover:scale-105 transition-all backdrop-blur-sm"
-          >
-            <Lightbulb size={16} strokeWidth={2.5} className="text-[#F6B047] group-hover:animate-pulse" />
-            Let's Ideate!
-            <span>💡</span>
-          </button>
+          {siteConfig.ideate.showInCommunity && (
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent('openIdeate'))}
+              className="group bg-gradient-to-r from-white/20 to-white/10 text-white border border-white/30 px-8 py-4 rounded-full font-semibold text-sm flex items-center gap-2 hover:bg-white/20 hover:scale-105 transition-all backdrop-blur-sm"
+            >
+              <Lightbulb size={16} strokeWidth={2.5} className="text-[#F6B047] group-hover:animate-pulse" />
+              {siteConfig.ideate.label}
+              <span>{siteConfig.ideate.emoji}</span>
+            </button>
+          )}
         </div>
       </div>
     </section>
