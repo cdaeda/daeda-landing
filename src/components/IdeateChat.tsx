@@ -596,26 +596,30 @@ END EVERY RESPONSE WITH:
                     className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     <div
-                      className={`max-w-[90%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                      className={`max-w-[90%] rounded-2xl px-4 py-3 text-sm ${
                         message.role === 'user'
                           ? 'bg-[#F6B047] text-[#0B0F1C] rounded-br-md'
                           : 'bg-white/10 text-white border border-white/10 rounded-bl-md'
                       }`}
                     >
-                      {message.content.split('\n').map((line, i) => (
-                        <span key={i}>
-                          {line.startsWith('•') ? (
-                            <span className="block ml-3 leading-relaxed">{line}</span>
-                          ) : line.startsWith('**') && line.endsWith('**') ? (
-                            <strong className="text-[#F6B047] block leading-tight">{line.replace(/\*\*/g, '')}</strong>
-                          ) : line.startsWith('*[') && line.endsWith(']*') ? (
-                            <span className="text-white/50 italic text-xs block leading-tight">{line.replace(/\*\[|\]\*/g, '')}</span>
-                          ) : (
-                            <span className="leading-relaxed">{line}</span>
-                          )}
-                          {i < message.content.split('\n').length - 1 && <br className="leading-none" />}
-                        </span>
-                      ))}
+                      {message.content.split('\n').map((line, i, arr) => {
+                        const isHeader = line.startsWith('**') && line.endsWith('**');
+                        const isBullet = line.startsWith('•');
+                        const isNote = line.startsWith('*[') && line.endsWith(']*');
+                        return (
+                          <span key={i} className={i < arr.length - 1 ? 'block mb-0.5' : 'block'}>
+                            {isBullet ? (
+                              <span className="ml-3">{line}</span>
+                            ) : isHeader ? (
+                              <strong className="text-[#F6B047] block mt-1.5 mb-0.5">{line.replace(/\*\*/g, '')}</strong>
+                            ) : isNote ? (
+                              <span className="text-white/50 italic text-xs">{line.replace(/\*\[|\]\*/g, '')}</span>
+                            ) : (
+                              line
+                            )}
+                          </span>
+                        );
+                      })}
                     </div>
                   </div>
                   
