@@ -87,7 +87,7 @@ export const siteConfig = {
 
   ideate: {
     label: "Let's Ideate!",
-    emoji: '💡',
+    emoji: '',
     iconLabel: 'Ideate',
     showInHero: true,
     showInCommunity: true,

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Lightbulb, Send, X, ChevronRight, Loader2, CheckCircle } from 'lucide-react';
+import { Lightbulb, Send, X, ChevronRight, Loader2, CheckCircle, Sparkles } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { siteConfig } from '../content.config';
 
@@ -8,6 +8,7 @@ interface Message {
   role: 'user' | 'model';
   content: string;
   timestamp: string;
+  suggestionChips?: string[];
 }
 
 interface IdeateChatProps {
@@ -18,23 +19,57 @@ interface IdeateChatProps {
 const GEMINI_API_KEY = 'AIzaSyBUUYr8pBcqraJbK2joNYXmKw0mlI8NYaA';
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
-const SYSTEM_PROMPT = `You are a helpful AI consultant for Daeda Group, an AI consulting firm. Your goal is to:
+const SYSTEM_PROMPT = `You are a helpful AI business consultant for Daeda Group, an AI consulting firm. Your role is to help business leaders explore how AI can solve their pain points, eliminate inefficiencies, and unlock growth opportunities.
 
-1. Understand the user's business ideas, challenges, or pain points
-2. Ask clarifying questions to deeply understand their needs
-3. Suggest potential AI-powered solutions that could help them
-4. Help them think through the problem and solution space
+KEY OBJECTIVES:
+1. Understand their business context (industry, size, current operations)
+2. Identify pain points, inefficiencies, or growth opportunities they're facing
+3. Educate them gently about relevant AI use cases without overwhelming jargon
+4. Ask contextual probing questions about both their business AND potential AI applications
+5. Help them envision concrete AI-powered solutions
 
-Be conversational, professional, and encouraging. Focus on understanding their needs before suggesting solutions.
+CONVERSATION APPROACH:
+- Start by understanding what they do and what challenge or opportunity they're exploring
+- Ask 2-3 probing questions at a time to learn about:
+  * Their business model and operations
+  * Specific pain points or bottlenecks
+  * Current tools and processes
+  * Goals and desired outcomes
+- When you mention AI concepts, briefly explain them in simple terms
+- Connect AI capabilities to their specific business context
+- Share 1-2 relevant examples of how similar businesses have used AI
 
-When you have enough information about their idea/challenge and have outlined a clear potential solution, offer to submit their information to the Daeda team for a formal proposal with pricing.
+EDUCATIONAL TONE:
+- Assume they may have never used AI before
+- Avoid technical jargon; use business-friendly language
+- Explain AI concepts with analogies when helpful
+- Be encouraging but realistic about what AI can and cannot do
+
+PROBING QUESTIONS TO ASK:
+- "What does your typical workflow look like for [process]?"
+- "How much time does your team spend on [task] currently?"
+- "What happens when [process] doesn't go smoothly?"
+- "Have you considered how AI could help with [specific area]?"
+- "What would it mean for your business if you could [desired outcome]?"
+
+When you have enough information about their business challenge and have outlined a concrete AI solution approach, offer to submit their information to the Daeda team for a formal proposal with pricing.
 
 IMPORTANT: Only offer to submit when you have:
-- A clear understanding of their business problem or idea
+- A clear understanding of their business problem or growth opportunity
 - Outlined at least one concrete AI solution approach
 - Confirmed they are interested in exploring this further
 
-When offering to submit, say something like: "I have a good understanding of what you're looking for. Would you like me to connect you with our team to get a detailed proposal and pricing for this solution?"`;
+When offering to submit, say something like: "I have a good understanding of what you're looking for and how AI could help. Would you like me to connect you with our team to get a detailed proposal and pricing for this solution?"`;
+
+// Starting question chips for users to select
+const STARTING_QUESTIONS = [
+  "I have a business process that's eating up too much time",
+  "I want to improve customer experience or support",
+  "I need help analyzing data to make better decisions",
+  "I'm curious about AI but don't know where to start",
+  "I want to automate repetitive tasks",
+  "I have an idea for a new AI-powered product or feature",
+];
 
 export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -48,6 +83,7 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
     phone: '',
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [showStartingChips, setShowStartingChips] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -95,6 +131,7 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
             content: m.content,
             timestamp: m.created_at,
           })));
+          setShowStartingChips(false);
           return;
         }
       }
@@ -111,12 +148,13 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
       if (session) {
         setSessionId(session.id);
         localStorage.setItem('ideate_chat_session', JSON.stringify({ id: session.id }));
+        setShowStartingChips(true);
         
-        // Add welcome message
+        // Add welcome message focused on business pain points and growth
         const welcomeMessage = {
           id: crypto.randomUUID(),
           role: 'model' as const,
-          content: "Hi there! I'm your AI ideation partner. 💡\n\nI'd love to hear about your business idea, challenge, or pain point. What's on your mind? Whether it's a problem you're trying to solve or an opportunity you want to explore, I'm here to help you think it through!",
+          content: "Welcome! I'm your AI business ideation partner. 💡\n\nI'm here to help you explore how AI can:\n• Solve frustrating business pain points\n• Eliminate time-wasting inefficiencies\n• Unlock new growth opportunities\n• Transform how your team works\n\n**What's on your mind?** Whether it's a process that's eating up too much time, a customer experience you want to improve, or a growth opportunity you want to explore—let's talk through it!\n\nOr select a topic below to get started:",
           timestamp: new Date().toISOString(),
         };
         
@@ -134,10 +172,11 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
       // Fallback to local-only mode
       const fallbackId = crypto.randomUUID();
       setSessionId(fallbackId);
+      setShowStartingChips(true);
       setMessages([{
         id: crypto.randomUUID(),
         role: 'model',
-        content: "Hi there! I'm your AI ideation partner. 💡\n\nI'd love to hear about your business idea, challenge, or pain point. What's on your mind?",
+        content: "Welcome! I'm your AI business ideation partner. 💡\n\nI'm here to help you explore how AI can solve business pain points, eliminate inefficiencies, and unlock growth opportunities.\n\nWhat challenge or opportunity would you like to explore?",
         timestamp: new Date().toISOString(),
       }]);
     }
@@ -157,11 +196,22 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
     }
   };
 
+  // Parse AI response to extract suggestion chips (format: [SUGGESTIONS: option1 | option2 | option3])
+  const parseAIResponse = (response: string): { cleanContent: string; chips: string[] } => {
+    const suggestionMatch = response.match(/\[SUGGESTIONS:\s*([^\]]+)\]/);
+    if (suggestionMatch) {
+      const chips = suggestionMatch[1].split('|').map(s => s.trim()).filter(Boolean);
+      const cleanContent = response.replace(/\[SUGGESTIONS:[^\]]*\]/, '').trim();
+      return { cleanContent, chips };
+    }
+    return { cleanContent: response, chips: [] };
+  };
+
   const callGemini = async (userMessage: string, conversationHistory: Message[]) => {
     try {
       const contents = [
         { role: 'user', parts: [{ text: SYSTEM_PROMPT }] },
-        { role: 'model', parts: [{ text: 'I understand my role as an AI consultant for Daeda Group. I will help users explore their ideas and pain points, and suggest AI-powered solutions.' }] },
+        { role: 'model', parts: [{ text: 'I understand my role as an AI business consultant for Daeda Group. I will help business leaders explore AI solutions for their pain points, inefficiencies, and growth opportunities while educating them gently about AI concepts.' }] },
         ...conversationHistory.map(m => ({
           role: m.role === 'user' ? 'user' : 'model',
           parts: [{ text: m.content }],
@@ -177,7 +227,7 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
         body: JSON.stringify({
           contents,
           generationConfig: {
-            temperature: 0.7,
+            temperature: 0.75,
             maxOutputTokens: 2048,
           },
         }),
@@ -188,25 +238,34 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
       }
 
       const data = await response.json();
-      return data.candidates?.[0]?.content?.parts?.[0]?.text || 'I apologize, but I could not generate a response at this time.';
+      const rawResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || 'I apologize, but I could not generate a response at this time.';
+      
+      // Parse for suggestion chips
+      const { cleanContent, chips } = parseAIResponse(rawResponse);
+      return { content: cleanContent, chips };
     } catch (error) {
       console.error('Error calling Gemini:', error);
-      return "I'm having trouble connecting right now. Let me try a different approach - could you tell me more about what you're working on?";
+      return { 
+        content: "I'm having trouble connecting right now. Let me try a different approach - could you tell me more about what business challenge you're facing or what growth opportunity you're exploring?",
+        chips: ["Process automation", "Data analysis", "Customer experience", "Cost reduction"]
+      };
     }
   };
 
-  const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+  const handleSend = async (overrideInput?: string) => {
+    const messageText = overrideInput || input;
+    if (!messageText.trim() || isLoading) return;
 
     const userMessage: Message = {
       id: crypto.randomUUID(),
       role: 'user',
-      content: input.trim(),
+      content: messageText.trim(),
       timestamp: new Date().toISOString(),
     };
 
     setMessages(prev => [...prev, userMessage]);
     setInput('');
+    setShowStartingChips(false);
     setIsLoading(true);
 
     await saveMessage(userMessage);
@@ -217,23 +276,15 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
     const modelMessage: Message = {
       id: crypto.randomUUID(),
       role: 'model',
-      content: aiResponse,
+      content: aiResponse.content,
       timestamp: new Date().toISOString(),
+      suggestionChips: aiResponse.chips.length > 0 ? aiResponse.chips : undefined,
     };
 
     setMessages(prev => [...prev, modelMessage]);
     await saveMessage(modelMessage);
 
     setIsLoading(false);
-
-    // Check if AI is offering to submit (look for keywords)
-    const lowerResponse = aiResponse.toLowerCase();
-    if (lowerResponse.includes('connect you with our team') || 
-        lowerResponse.includes('proposal') || 
-        lowerResponse.includes('detailed proposal') ||
-        (lowerResponse.includes('submit') && lowerResponse.includes('interested'))) {
-      // AI has offered - we'll let the user respond and check their next message
-    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -241,6 +292,11 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
       e.preventDefault();
       handleSend();
     }
+  };
+
+  const handleChipClick = (chipText: string) => {
+    setInput(chipText);
+    inputRef.current?.focus();
   };
 
   const handleContactSubmit = async (e: React.FormEvent) => {
@@ -283,8 +339,9 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
       const response: Message = {
         id: crypto.randomUUID(),
         role: 'model',
-        content: "No problem! Feel free to keep exploring your idea with me, or ask any other questions you have. I'm here to help!",
+        content: "No problem! Feel free to keep exploring your idea with me. What other questions do you have about how AI could help your business?",
         timestamp: new Date().toISOString(),
+        suggestionChips: ["Show me AI examples", "How much does AI cost?", "How long does implementation take?"],
       };
       setMessages(prev => [...prev, response]);
       saveMessage(response);
@@ -331,7 +388,7 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
         <div className="flex items-center justify-between px-6 py-5 border-b border-white/10 flex-shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#F6B047] to-[#F6B047]/50 flex items-center justify-center">
-              <Lightbulb size={20} className="text-[#0B0F1C]" strokeWidth={2.5} />
+              <Sparkles size={20} className="text-[#0B0F1C]" strokeWidth={2.5} />
             </div>
             <div>
               <h3 className="text-white font-semibold text-lg">{siteConfig.ideate.drawerTitle}</h3>
@@ -350,25 +407,65 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
         {!showContactForm ? (
           <>
             <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
+              {messages.map((message, index) => (
+                <div key={message.id}>
                   <div
-                    className={`max-w-[90%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
-                      message.role === 'user'
-                        ? 'bg-[#F6B047] text-[#0B0F1C] rounded-br-md'
-                        : 'bg-white/10 text-white border border-white/10 rounded-bl-md'
-                    }`}
+                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
-                    {message.content.split('\n').map((line, i) => (
-                      <span key={i}>
-                        {line}
-                        {i < message.content.split('\n').length - 1 && <br />}
-                      </span>
-                    ))}
+                    <div
+                      className={`max-w-[90%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                        message.role === 'user'
+                          ? 'bg-[#F6B047] text-[#0B0F1C] rounded-br-md'
+                          : 'bg-white/10 text-white border border-white/10 rounded-bl-md'
+                      }`}
+                    >
+                      {message.content.split('\n').map((line, i) => (
+                        <span key={i}>
+                          {line.startsWith('•') ? (
+                            <span className="block ml-3 my-1">{line}</span>
+                          ) : line.startsWith('**') && line.endsWith('**') ? (
+                            <strong className="text-[#F6B047] block mt-2 mb-1">{line.replace(/\*\*/g, '')}</strong>
+                          ) : (
+                            line
+                          )}
+                          {i < message.content.split('\n').length - 1 && <br />}
+                        </span>
+                      ))}
+                    </div>
                   </div>
+                  
+                  {/* Suggestion chips for AI messages */}
+                  {message.role === 'model' && message.suggestionChips && message.suggestionChips.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2 ml-1">
+                      {message.suggestionChips.map((chip, chipIndex) => (
+                        <button
+                          key={chipIndex}
+                          onClick={() => handleChipClick(chip)}
+                          className="bg-white/10 hover:bg-[#F6B047]/20 border border-white/20 hover:border-[#F6B047]/50 text-white/80 hover:text-white text-xs px-3 py-1.5 rounded-full transition-all"
+                        >
+                          {chip}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {/* Starting question chips - only show after welcome message */}
+                  {message.role === 'model' && index === 0 && showStartingChips && (
+                    <div className="mt-4 space-y-2">
+                      <p className="text-white/50 text-xs mb-2">Or click a topic to explore:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {STARTING_QUESTIONS.map((question, qIndex) => (
+                          <button
+                            key={qIndex}
+                            onClick={() => handleSend(question)}
+                            className="bg-[#F6B047]/10 hover:bg-[#F6B047]/20 border border-[#F6B047]/30 hover:border-[#F6B047]/60 text-white/90 hover:text-white text-xs px-3 py-2 rounded-lg transition-all text-left leading-tight"
+                          >
+                            {question}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
               
@@ -404,19 +501,35 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
 
             {/* Input Area */}
             <div className="px-6 py-4 border-t border-white/10 flex-shrink-0">
+              {/* Quick suggestion chips above input */}
+              {!isLoading && messages.length > 1 && messages.length < 4 && (
+                <div className="flex flex-wrap gap-2 mb-3">
+                  <span className="text-white/40 text-xs py-1">Try asking:</span>
+                  {["What can AI do for my business?", "How do I get started?", "What does AI implementation look like?"].map((suggestion, i) => (
+                    <button
+                      key={i}
+                      onClick={() => handleChipClick(suggestion)}
+                      className="text-[#F6B047]/70 hover:text-[#F6B047] text-xs underline decoration-dotted"
+                    >
+                      {suggestion}
+                    </button>
+                  ))}
+                </div>
+              )}
+              
               <div className="relative">
                 <textarea
                   ref={inputRef}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Share your idea or challenge..."
+                  placeholder="Describe your business challenge or idea..."
                   className="w-full bg-white/5 border border-white/20 rounded-2xl pl-4 pr-12 py-3 text-white text-sm placeholder:text-white/40 focus:outline-none focus:border-[#F6B047]/50 resize-none"
                   rows={2}
                   disabled={isLoading}
                 />
                 <button
-                  onClick={handleSend}
+                  onClick={() => handleSend()}
                   disabled={!input.trim() || isLoading}
                   className="absolute right-3 bottom-3 p-2 bg-[#F6B047] rounded-full text-[#0B0F1C] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#F6B047]/90 transition-all"
                 >
@@ -437,7 +550,7 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
               </div>
               <h3 className="text-white font-semibold text-xl mb-2">Ready to bring your idea to life?</h3>
               <p className="text-white/60 text-sm">
-                We'll review our conversation and get back to you with a detailed proposal and pricing within 1-2 business days.
+                We'll review our conversation and get back to you with a detailed AI solution proposal and pricing within 1-2 business days.
               </p>
             </div>
 
@@ -482,7 +595,7 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
                 className="w-full bg-[#F6B047] text-[#0B0F1C] py-4 rounded-xl font-semibold text-sm hover:bg-[#F6B047]/90 transition-all mt-6 flex items-center justify-center gap-2"
               >
                 <Send size={16} />
-                Submit for Proposal
+                Submit for AI Solution Proposal
               </button>
               
               <button
@@ -502,7 +615,7 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
             </div>
             <h3 className="text-white font-semibold text-2xl mb-3">We've received your submission!</h3>
             <p className="text-white/60 text-sm max-w-xs mx-auto mb-8">
-              Our team will review your idea and get back to you with a proposed solution and pricing within 1-2 business days.
+              Our team will review your AI solution needs and get back to you with a proposed approach and pricing within 1-2 business days.
             </p>
             <button
               onClick={onClose}
