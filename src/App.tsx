@@ -60,7 +60,7 @@ function App() {
       <StarField starCount={80} />
 
       {/* Content */}
-      <Navigation />
+      <Navigation lenis={lenis} />
       <IdeateIcon onClick={() => setIsIdeateOpen(true)} />
       <IdeateChat 
         isOpen={isIdeateOpen} 

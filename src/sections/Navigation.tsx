@@ -2,7 +2,11 @@ import { useEffect, useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { siteConfig } from '../content.config';
 
-const Navigation = () => {
+interface NavigationProps {
+  lenis?: any;
+}
+
+const Navigation = ({ lenis }: NavigationProps) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -19,9 +23,22 @@ const Navigation = () => {
   const navItems = navigation.items;
 
   const scrollToSection = (href: string) => {
-    const element = document.querySelector(href);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+    if (lenis) {
+      // Use Lenis for smooth scrolling
+      const element = document.querySelector(href);
+      if (element) {
+        lenis.scrollTo(element, {
+          offset: 0,
+          duration: 1.5,
+          easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        });
+      }
+    } else {
+      // Fallback to native scroll
+      const element = document.querySelector(href);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
     }
     setIsMobileMenuOpen(false);
   };
@@ -42,7 +59,11 @@ const Navigation = () => {
             className="flex items-center hover:opacity-80 transition-opacity"
             onClick={(e) => {
               e.preventDefault();
-              window.scrollTo({ top: 0, behavior: 'smooth' });
+              if (lenis) {
+                lenis.scrollTo(0, { duration: 1.5 });
+              } else {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }
             }}
           >
             <img 
