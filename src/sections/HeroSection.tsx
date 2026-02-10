@@ -179,7 +179,7 @@ const HeroSection = ({ className = '' }: HeroSectionProps) => {
         {/* Logo mark */}
         <div className="mb-6">
           <img 
-            src="/logo.svg" 
+            src={siteConfig.hero.logo} 
             alt="Daeda Group" 
             className="h-16 sm:h-20 w-auto mx-auto"
           />
