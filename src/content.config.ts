@@ -95,6 +95,7 @@ export const siteConfig = {
     showInContact: true,
     drawerTitle: "Let's Ideate!",
     drawerSubtitle: 'Your AI brainstorming partner',
+    initialMessage: "Hi there! I'm your AI business ideation partner. 💡\nI'm here to help you explore how AI might help your business—no technical background needed!\n**Here's what we can chat about:**\n• Finding ways to save time on repetitive tasks\n• Improving how you serve customers\n• Getting more from your data\n• Exploring new AI opportunities you might not know about\n**What's on your mind?** Feel free to share what's working well, what's frustrating, or just what you're curious about.",
   },
 
   proof: {

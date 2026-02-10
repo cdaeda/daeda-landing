@@ -148,7 +148,7 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
         const welcomeMessage = {
           id: crypto.randomUUID(),
           role: 'model' as const,
-          content: "Hi there! I'm your AI business ideation partner. 💡\nI'm here to help you explore how AI might help your business—no technical background needed!\n**Here's what we can chat about:**\n• Finding ways to save time on repetitive tasks\n• Improving how you serve customers\n• Getting more from your data\n• Exploring new AI opportunities you might not know about\n**What's on your mind?** Feel free to share what's working well, what's frustrating, or just what you're curious about.",
+          content: siteConfig.ideate.initialMessage,
           timestamp: new Date().toISOString(),
         };
         
@@ -168,7 +168,7 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
       setMessages([{
         id: crypto.randomUUID(),
         role: 'model',
-        content: "Hi there! I'm your AI business ideation partner. 💡\nI'm here to help you explore how AI might help your business—no technical background needed!\n**What we can chat about:**\n• Saving time on repetitive tasks\n• Improving customer service\n• Getting insights from your data\n• Exploring new AI opportunities\nWhat's on your mind? Share what's working well or what's frustrating!",
+        content: siteConfig.ideate.initialMessage,
         timestamp: new Date().toISOString(),
       }]);
     }
