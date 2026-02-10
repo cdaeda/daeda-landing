@@ -22,7 +22,7 @@ export const siteConfig = {
   },
 
   hero: {
-    logo: '/DaedaGroup-Hero-transparent.png',
+    logo: '/D for Daeda Group-transparent.png',
     headline: {
       word1: 'AI',
       word2: 'Experts',

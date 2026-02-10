@@ -52,8 +52,8 @@ const Navigation = () => {
             />
           </a>
 
-          {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-8">
+          {/* Desktop Nav - mr-20 gives space for the lightbulb icon */}
+          <div className="hidden md:flex items-center gap-8 mr-16 lg:mr-20">
             {navItems.map((item) => (
               <button
                 key={item.label}
@@ -63,12 +63,6 @@ const Navigation = () => {
                 {item.label}
               </button>
             ))}
-            <button
-              onClick={() => scrollToSection('#contact')}
-              className="bg-[#F6B047] text-[#0B0F1C] px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-[#F6B047]/90 transition-colors"
-            >
-              {navigation.cta}
-            </button>
           </div>
 
           {/* Mobile Menu Button */}
@@ -97,12 +91,7 @@ const Navigation = () => {
               {item.label}
             </button>
           ))}
-          <button
-            onClick={() => scrollToSection('#contact')}
-            className="bg-[#F6B047] text-[#0B0F1C] px-8 py-3 rounded-full text-lg font-semibold mt-4"
-          >
-            {navigation.cta}
-          </button>
+
         </div>
       </div>
     </>

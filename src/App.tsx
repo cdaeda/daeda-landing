@@ -13,7 +13,7 @@ import ClientsSection from './sections/ClientsSection';
 import ContactSection from './sections/ContactSection';
 import StarField from './components/StarField';
 import { IdeateChat } from './components/IdeateChat';
-import { IdeateIcon, IdeateButton } from './components/IdeateButton';
+import { IdeateIcon } from './components/IdeateButton';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -62,10 +62,6 @@ function App() {
       {/* Content */}
       <Navigation />
       <IdeateIcon onClick={() => setIsIdeateOpen(true)} />
-      <IdeateButton 
-        onClick={() => setIsIdeateOpen(true)} 
-        variant="floating" 
-      />
       <IdeateChat 
         isOpen={isIdeateOpen} 
         onClose={() => setIsIdeateOpen(false)} 
