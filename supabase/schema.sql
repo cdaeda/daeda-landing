@@ -23,3 +23,87 @@ CREATE POLICY "Allow authenticated select" ON contact_submissions
 -- Create index for status filtering
 CREATE INDEX idx_contact_submissions_status ON contact_submissions(status);
 CREATE INDEX idx_contact_submissions_created_at ON contact_submissions(created_at DESC);
+
+-- =====================================================
+-- AI Chat Tables for "Let's Ideate!" feature
+-- =====================================================
+
+-- Create chat_sessions table to track AI chat sessions
+CREATE TABLE IF NOT EXISTS chat_sessions (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  status TEXT DEFAULT 'active' CHECK (status IN ('active', 'submitted', 'closed')),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Create chat_messages table to store conversation history
+CREATE TABLE IF NOT EXISTS chat_messages (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  session_id UUID NOT NULL REFERENCES chat_sessions(id) ON DELETE CASCADE,
+  role TEXT NOT NULL CHECK (role IN ('user', 'model')),
+  content TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Create ideation_submissions table for AI chat leads
+CREATE TABLE IF NOT EXISTS ideation_submissions (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  session_id UUID REFERENCES chat_sessions(id) ON DELETE SET NULL,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  phone TEXT,
+  chat_summary TEXT,
+  status TEXT DEFAULT 'new' CHECK (status IN ('new', 'reviewed', 'contacted', 'proposal_sent')),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Enable Row Level Security on new tables
+ALTER TABLE chat_sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ideation_submissions ENABLE ROW LEVEL SECURITY;
+
+-- Policies for chat_sessions
+CREATE POLICY "Allow anonymous insert on chat_sessions" ON chat_sessions
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Allow anonymous select own session" ON chat_sessions
+  FOR SELECT USING (true);
+
+CREATE POLICY "Allow anonymous update own session" ON chat_sessions
+  FOR UPDATE USING (true);
+
+-- Policies for chat_messages
+CREATE POLICY "Allow anonymous insert on chat_messages" ON chat_messages
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Allow anonymous select session messages" ON chat_messages
+  FOR SELECT USING (true);
+
+-- Policies for ideation_submissions
+CREATE POLICY "Allow anonymous insert on ideation_submissions" ON ideation_submissions
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Allow authenticated select on ideation_submissions" ON ideation_submissions
+  FOR SELECT USING (auth.role() = 'authenticated');
+
+-- Create indexes for performance
+CREATE INDEX idx_chat_messages_session_id ON chat_messages(session_id);
+CREATE INDEX idx_chat_messages_created_at ON chat_messages(created_at);
+CREATE INDEX idx_ideation_submissions_status ON ideation_submissions(status);
+CREATE INDEX idx_ideation_submissions_created_at ON ideation_submissions(created_at DESC);
+CREATE INDEX idx_ideation_submissions_session_id ON ideation_submissions(session_id);
+
+-- Trigger to update chat_sessions.updated_at
+CREATE OR REPLACE FUNCTION update_chat_sessions_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = timezone('utc'::text, now());
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS update_chat_sessions_updated_at ON chat_sessions;
+CREATE TRIGGER update_chat_sessions_updated_at
+  BEFORE UPDATE ON chat_sessions
+  FOR EACH ROW
+  EXECUTE FUNCTION update_chat_sessions_updated_at();

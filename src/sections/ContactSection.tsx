@@ -1,7 +1,7 @@
 import { useRef, useLayoutEffect, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Send, MapPin, Mail, AlertCircle } from 'lucide-react';
+import { Send, MapPin, Mail, AlertCircle, Lightbulb } from 'lucide-react';
 import { siteConfig } from '../content.config';
 import { supabase } from '../lib/supabase';
 
@@ -232,6 +232,24 @@ const ContactSection = ({ className = '' }: ContactSectionProps) => {
                       <Send size={16} />
                     </>
                   )}
+                </button>
+
+                {/* Divider */}
+                <div className="flex items-center gap-3 my-2">
+                  <div className="flex-1 h-px bg-white/10" />
+                  <span className="text-white/40 text-xs">or</span>
+                  <div className="flex-1 h-px bg-white/10" />
+                </div>
+
+                {/* Let's Ideate Button */}
+                <button
+                  type="button"
+                  onClick={() => window.dispatchEvent(new CustomEvent('openIdeate'))}
+                  className="group w-full bg-gradient-to-r from-white/10 to-white/5 border border-white/20 text-white py-4 rounded-xl font-semibold text-sm hover:bg-white/15 transition-all flex items-center justify-center gap-2"
+                >
+                  <Lightbulb size={16} strokeWidth={2.5} className="text-[#F6B047] group-hover:animate-pulse" />
+                  Let's Ideate with AI!
+                  <span>💡</span>
                 </button>
               </form>
             )}

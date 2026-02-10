@@ -34,7 +34,7 @@ export const siteConfig = {
   capabilities: {
     headline: 'Obsessed with AI-oriented Outcomes',
     description:
-      'We 10x your tech investments, delivering the outcomes you have always dreamt about.',
+      'We will 10x your expectations, delivering the outcomes you have always dreamed about.',
     exploreCta: 'Explore services',
     drawerTitle: 'Our Services',
     drawerDescription: 'Delivering practical yet magical solutions to drive outcomes - quickly.',
@@ -64,7 +64,7 @@ export const siteConfig = {
       {
         icon: 'Cloud',
         title: 'Technology Modernization',
-        description: 'Upgrade your systems without the headaches',
+        description: 'Refresh your tech with AI architectures and cloud solutions',
         details: [
           'Move to the cloud safely and efficiently',
           'Connect your data and systems seamlessly',
@@ -86,23 +86,23 @@ export const siteConfig = {
   proof: {
     mainStat: {
       value: '30',
-      label: 'years of Silicon Valley experience',
+      label: 'years of transformation experience',
     },
-    subtitle: 'From seed-stage startups to Fortune 50 transformation.',
+    subtitle: "From seed-stage startups to Fortune 50. From Dotcom to Big Data to AI, we've steered companies through all of it.",
     stats: [
       {
         icon: 'Briefcase',
-        value: '120+',
-        label: 'products shipped',
+        value: '80+',
+        label: 'implementations',
       },
       {
         icon: 'TrendingUp',
         value: '$2B+',
-        label: 'in realized value',
+        label: 'in ROI',
       },
       {
         icon: 'Globe',
-        value: '12',
+        value: '18',
         label: 'countries',
       },
     ],
@@ -114,7 +114,7 @@ export const siteConfig = {
     footer:
       'From Fortune 50 enterprises to high-growth startups across fintech, healthcare, and technology.',
     clientList: [
-      { name: 'Bank of America', logo: '/logos/bank-of-america.png' },
+      { name: 'Bank of America', logo: '/logos/Bank-of-America-Emblem.png' },
       { name: 'Charles Schwab', logo: '/logos/charles-schwab.png' },
       { name: 'JP Morgan', logo: '/logos/jp-morgan.png' },
       { name: 'Blue Cross Blue Shield', logo: '/logos/BCBS-NC.png' },
@@ -125,7 +125,7 @@ export const siteConfig = {
       { name: 'High Sierra', logo: '/logos/high-sierra-logo.png' },
       { name: "Children's Healthcare", logo: '/logos/CHOA-logo.png' },
       { name: 'Johnson & Johnson', logo: '/logos/Johnson-Johnson.png' },
-      { name: 'Sanofi Genzyme', logo: '/logos/sanofi-genzyme.png' },
+      { name: 'Sanofi Genzyme', logo: '/logos/genzyme.png' },
       { name: 'Chick-Fil-A', logo: '/logos/Chick-fil-A-logo.png' },
       { name: 'Epic Games', logo: '/logos/Epic_Games_logo.png'},
       { name: 'Duke Energy', logo: '/logos/Duke_Energy.png' },
@@ -137,7 +137,7 @@ export const siteConfig = {
   contact: {
     headline: "Let's build what's next.",
     description:
-      "Tell us what you're modernizing. We'll reply within 2 business days with next steps.",
+      "Tell us your dreams, your pains. We're here!",
     form: {
       name: {
         label: 'Name',

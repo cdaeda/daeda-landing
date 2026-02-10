@@ -1,7 +1,7 @@
 import { useEffect, useRef, useLayoutEffect } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ArrowRight, ChevronDown } from 'lucide-react';
+import { ArrowRight, ChevronDown, Lightbulb } from 'lucide-react';
 import { siteConfig } from '../content.config';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -202,7 +202,7 @@ const HeroSection = ({ className = '' }: HeroSectionProps) => {
         </p>
 
         {/* CTAs */}
-        <div ref={ctaRef} className="flex flex-col sm:flex-row gap-4 opacity-0">
+        <div ref={ctaRef} className="flex flex-col sm:flex-row gap-4 opacity-0 flex-wrap justify-center">
           <button
             onClick={scrollToContact}
             className="group bg-[#F6B047] text-black px-8 py-4 rounded-full font-semibold text-sm flex items-center gap-2 hover:bg-[#F6B047]/90 transition-all hover:scale-105 shadow-lg"
@@ -215,6 +215,14 @@ const HeroSection = ({ className = '' }: HeroSectionProps) => {
             className="border border-white/40 text-white px-8 py-4 rounded-full font-semibold text-sm hover:bg-white/15 transition-all backdrop-blur-sm"
           >
             {siteConfig.hero.secondaryCta}
+          </button>
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('openIdeate'))}
+            className="group bg-gradient-to-r from-[#F6B047] to-[#F6B047]/80 text-[#0B0F1C] px-8 py-4 rounded-full font-semibold text-sm flex items-center gap-2 hover:shadow-lg hover:scale-105 transition-all"
+          >
+            <Lightbulb size={16} strokeWidth={2.5} className="group-hover:animate-pulse" />
+            Let's Ideate!
+            <span>💡</span>
           </button>
         </div>
       </div>

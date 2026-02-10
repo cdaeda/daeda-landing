@@ -23,6 +23,35 @@ export interface ContactSubmission {
   status?: 'new' | 'contacted' | 'archived';
 }
 
+// Types for AI chat sessions
+export interface ChatSession {
+  id?: string;
+  created_at?: string;
+  updated_at?: string;
+  status?: 'active' | 'submitted' | 'closed';
+}
+
+// Types for chat messages
+export interface ChatMessage {
+  id?: string;
+  session_id: string;
+  role: 'user' | 'model';
+  content: string;
+  created_at?: string;
+}
+
+// Types for ideation submissions
+export interface IdeationSubmission {
+  id?: string;
+  session_id?: string;
+  name: string;
+  email: string;
+  phone?: string;
+  chat_summary?: string;
+  created_at?: string;
+  status?: 'new' | 'reviewed' | 'contacted' | 'proposal_sent';
+}
+
 // Database schema type definition
 export type Database = {
   public: {
@@ -31,6 +60,21 @@ export type Database = {
         Row: ContactSubmission;
         Insert: Omit<ContactSubmission, 'id' | 'created_at'>;
         Update: Partial<Omit<ContactSubmission, 'id' | 'created_at'>>;
+      };
+      chat_sessions: {
+        Row: ChatSession;
+        Insert: Omit<ChatSession, 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<ChatSession, 'id' | 'created_at'>>;
+      };
+      chat_messages: {
+        Row: ChatMessage;
+        Insert: Omit<ChatMessage, 'id' | 'created_at'>;
+        Update: Partial<Omit<ChatMessage, 'id' | 'created_at'>>;
+      };
+      ideation_submissions: {
+        Row: IdeationSubmission;
+        Insert: Omit<IdeationSubmission, 'id' | 'created_at'>;
+        Update: Partial<Omit<IdeationSubmission, 'id' | 'created_at'>>;
       };
     };
   };

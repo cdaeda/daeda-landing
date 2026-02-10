@@ -183,16 +183,16 @@ const CapabilitiesSection = ({ className = '' }: CapabilitiesSectionProps) => {
         onOpenChange={setDrawerOpen} 
         direction="right"
       >
-        <DrawerContent className="bg-white/90 backdrop-blur-xl border-l border-white/40 shadow-[0_0_60px_rgba(0,0,0,0.3)] mt-[76px] h-[calc(100vh-76px)]">
+        <DrawerContent className="bg-[#0B0F1C]/95 backdrop-blur-xl border-l border-white/20 shadow-[0_0_60px_rgba(0,0,0,0.5)] mt-[76px] h-[calc(100vh-76px)]">
           {/* Glass edge highlight */}
-          <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-transparent via-white/60 to-transparent" />
+          <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-transparent via-white/30 to-transparent" />
           
           {/* Arrow navigation to close - positioned on the left edge */}
           <DrawerClose className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 z-[200] group">
-            <div className="bg-white/90 backdrop-blur-sm shadow-xl rounded-full p-2 border border-white/50 hover:bg-white hover:scale-110 transition-all duration-300">
+            <div className="bg-[#0B0F1C]/80 backdrop-blur-sm shadow-xl rounded-full p-2 border border-white/30 hover:bg-[#0B0F1C] hover:scale-110 transition-all duration-300">
               <ChevronRight 
                 size={20} 
-                className="text-[#0B0F1C] rotate-180 group-hover:-translate-x-0.5 transition-transform" 
+                className="text-white group-hover:translate-x-0.5 transition-transform" 
                 strokeWidth={2.5}
               />
             </div>
@@ -201,10 +201,10 @@ const CapabilitiesSection = ({ className = '' }: CapabilitiesSectionProps) => {
           <div className="flex flex-col h-full max-h-full">
             <DrawerHeader className="pb-4 pt-5 flex-shrink-0">
               <div className="flex items-center justify-between">
-                <DrawerTitle className="text-[#0B0F1C] text-lg font-semibold tracking-tight">
+                <DrawerTitle className="text-white text-lg font-semibold tracking-tight">
                   {capabilities.drawerTitle}
                 </DrawerTitle>
-                <DrawerClose className="text-[#0B0F1C]/50 hover:text-[#0B0F1C] transition-colors p-1.5 rounded-full hover:bg-gray-100/80 -mr-2">
+                <DrawerClose className="text-white/50 hover:text-white transition-colors p-1.5 rounded-full hover:bg-white/10 -mr-2">
                   <X size={18} strokeWidth={2} />
                 </DrawerClose>
               </div>
@@ -217,7 +217,7 @@ const CapabilitiesSection = ({ className = '' }: CapabilitiesSectionProps) => {
                   return (
                     <div 
                       key={card.title} 
-                      className="group/card bg-gradient-to-br from-white/70 to-white/40 rounded-xl p-3 border border-white/60 shadow-sm hover:shadow-md hover:border-[#F6B047]/30 transition-all duration-300"
+                      className="group/card bg-gradient-to-br from-white/10 to-white/5 rounded-xl p-3 border border-white/20 shadow-sm hover:shadow-md hover:border-[#F6B047]/40 transition-all duration-300"
                     >
                       <div className="flex items-center gap-3 mb-2">
                         {/* Compact icon container */}
@@ -230,7 +230,7 @@ const CapabilitiesSection = ({ className = '' }: CapabilitiesSectionProps) => {
                             />
                           )}
                         </div>
-                        <h3 className="text-[#0B0F1C] font-semibold text-sm flex-1 leading-tight">
+                        <h3 className="text-white font-semibold text-sm flex-1 leading-tight">
                           {card.title}
                         </h3>
                         <span className="text-[10px] font-bold text-[#F6B047]/60">
@@ -243,7 +243,7 @@ const CapabilitiesSection = ({ className = '' }: CapabilitiesSectionProps) => {
                         {card.details?.map((detail, idx) => (
                           <li
                             key={idx}
-                            className="text-[#0B0F1C]/65 text-xs flex items-start gap-2"
+                            className="text-white/70 text-xs flex items-start gap-2"
                           >
                             <span className="w-1 h-1 rounded-full bg-[#F6B047]/70 mt-1.5 flex-shrink-0" />
                             <span className="leading-relaxed">{detail}</span>

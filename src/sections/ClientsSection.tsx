@@ -151,7 +151,7 @@ const ClientsSection = ({ className = '' }: ClientsSectionProps) => {
   }
 
   const LogoItem = ({ client }: { client: Client }) => (
-    <div className="bg-white/5 border border-white/10 rounded-2xl px-8 py-6 flex items-center justify-center min-w-[220px] h-[160px] hover:border-[#F6B047]/40 transition-all backdrop-blur-sm">
+    <div className="bg-white/40 border border-white/30 rounded-2xl px-8 py-6 flex items-center justify-center min-w-[220px] h-[160px] hover:border-[#F6B047]/40 transition-all backdrop-blur-sm">
       {client.logo ? (
         <img
           src={client.logo}
