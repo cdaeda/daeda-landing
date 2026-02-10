@@ -1,0 +1,51 @@
+/* Daeda Group - App Styles */
+
+/* Radial gradient background utility */
+.bg-gradient-radial {
+  background: radial-gradient(ellipse at center, var(--tw-gradient-from) 0%, var(--tw-gradient-via) 50%, var(--tw-gradient-to) 100%);
+}
+
+/* Smooth transitions for all interactive elements */
+button, a, input, textarea {
+  transition: all 0.2s ease;
+}
+
+/* Focus states */
+input:focus, textarea:focus {
+  box-shadow: 0 0 0 2px rgba(246, 176, 71, 0.2);
+}
+
+/* Prevent text selection on decorative elements */
+img {
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Ensure proper stacking context */
+section {
+  will-change: transform;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .capability-card {
+    width: 220px !important;
+    margin-left: 0 !important;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Canvas starfield */
+canvas {
+  display: block;
+}

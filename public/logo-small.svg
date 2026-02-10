@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none">
+  <!-- Small logo mark - just the geometric hexagon -->
+  <g transform="translate(4, 4)">
+    <path d="M16 2L29 9.5V24.5L16 32L3 24.5V9.5L16 2Z" 
+          stroke="#F6B047" 
+          stroke-width="2.5" 
+          fill="none"/>
+    <circle cx="16" cy="17" r="4" fill="#F6B047"/>
+    <line x1="16" y1="17" x2="16" y2="4" stroke="#F6B047" stroke-width="1.5"/>
+    <line x1="16" y1="17" x2="27" y2="23" stroke="#F6B047" stroke-width="1.5"/>
+    <line x1="16" y1="17" x2="5" y2="23" stroke="#F6B047" stroke-width="1.5"/>
+  </g>
+</svg>

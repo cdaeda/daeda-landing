@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" fill="none">
+  <style>
+    .text { font-family: system-ui, -apple-system, sans-serif; font-weight: 600; }
+  </style>
+  <!-- Geometric mark representing "Daeda" - interconnected nodes/structure -->
+  <g transform="translate(12, 12)">
+    <!-- Central hexagon shape -->
+    <path d="M18 2L32.5 10.5V27.5L18 36L3.5 27.5V10.5L18 2Z" 
+          stroke="#F6B047" 
+          stroke-width="2.5" 
+          fill="none"/>
+    <!-- Inner connections -->
+    <circle cx="18" cy="19" r="4" fill="#F6B047"/>
+    <line x1="18" y1="19" x2="18" y2="4" stroke="#F6B047" stroke-width="1.5"/>
+    <line x1="18" y1="19" x2="30" y2="26" stroke="#F6B047" stroke-width="1.5"/>
+    <line x1="18" y1="19" x2="6" y2="26" stroke="#F6B047" stroke-width="1.5"/>
+    <!-- Outer nodes -->
+    <circle cx="18" cy="4" r="2" fill="#F4F6FB"/>
+    <circle cx="30" cy="26" r="2" fill="#F4F6FB"/>
+    <circle cx="6" cy="26" r="2" fill="#F4F6FB"/>
+  </g>
+  <!-- Text -->
+  <text x="56" y="38" class="text" font-size="22" fill="#F4F6FB">Daeda</text>
+  <text x="126" y="38" class="text" font-size="22" fill="#F4F6FB" opacity="0.6">Group</text>
+</svg>
