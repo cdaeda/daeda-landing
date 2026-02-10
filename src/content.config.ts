@@ -11,7 +11,7 @@ export const siteConfig = {
   },
 
   navigation: {
-    logo: '/Daeda Group horizontal-transparent.png',
+    logo: '/DG-arch.png',
     items: [
       { label: 'Work', href: '#clients' },
       { label: 'Services', href: '#capabilities' },

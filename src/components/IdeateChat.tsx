@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Lightbulb, Send, X, ChevronRight, Loader2, CheckCircle, Sparkles } from 'lucide-react';
+import { Lightbulb, Send, X, ChevronRight, Loader2, CheckCircle, Sparkles, Search } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { siteConfig } from '../content.config';
 
@@ -9,6 +9,18 @@ interface Message {
   content: string;
   timestamp: string;
   suggestionChips?: string[];
+  hasSearchResults?: boolean;
+}
+
+interface ConversationContext {
+  industry?: string;
+  companySize?: string;
+  painPoints: string[];
+  goals: string[];
+  currentTools: string[];
+  budgetRange?: string;
+  timeline?: string;
+  stakeholders: string[];
 }
 
 interface IdeateChatProps {
@@ -19,47 +31,10 @@ interface IdeateChatProps {
 const GEMINI_API_KEY = 'AIzaSyBUUYr8pBcqraJbK2joNYXmKw0mlI8NYaA';
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
-const SYSTEM_PROMPT = `You are a helpful AI business consultant for Daeda Group, an AI consulting firm. Your role is to help business leaders explore how AI can solve their pain points, eliminate inefficiencies, and unlock growth opportunities.
-
-KEY OBJECTIVES:
-1. Understand their business context (industry, size, current operations)
-2. Identify pain points, inefficiencies, or growth opportunities they're facing
-3. Educate them gently about relevant AI use cases without overwhelming jargon
-4. Ask contextual probing questions about both their business AND potential AI applications
-5. Help them envision concrete AI-powered solutions
-
-CONVERSATION APPROACH:
-- Start by understanding what they do and what challenge or opportunity they're exploring
-- Ask 2-3 probing questions at a time to learn about:
-  * Their business model and operations
-  * Specific pain points or bottlenecks
-  * Current tools and processes
-  * Goals and desired outcomes
-- When you mention AI concepts, briefly explain them in simple terms
-- Connect AI capabilities to their specific business context
-- Share 1-2 relevant examples of how similar businesses have used AI
-
-EDUCATIONAL TONE:
-- Assume they may have never used AI before
-- Avoid technical jargon; use business-friendly language
-- Explain AI concepts with analogies when helpful
-- Be encouraging but realistic about what AI can and cannot do
-
-PROBING QUESTIONS TO ASK:
-- "What does your typical workflow look like for [process]?"
-- "How much time does your team spend on [task] currently?"
-- "What happens when [process] doesn't go smoothly?"
-- "Have you considered how AI could help with [specific area]?"
-- "What would it mean for your business if you could [desired outcome]?"
-
-When you have enough information about their business challenge and have outlined a concrete AI solution approach, offer to submit their information to the Daeda team for a formal proposal with pricing.
-
-IMPORTANT: Only offer to submit when you have:
-- A clear understanding of their business problem or growth opportunity
-- Outlined at least one concrete AI solution approach
-- Confirmed they are interested in exploring this further
-
-When offering to submit, say something like: "I have a good understanding of what you're looking for and how AI could help. Would you like me to connect you with our team to get a detailed proposal and pricing for this solution?"`;
+// Supabase Edge Function URLs
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const MCP_CONTEXT_URL = `${SUPABASE_URL}/functions/v1/mcp-context`;
+const BRAVE_SEARCH_URL = `${SUPABASE_URL}/functions/v1/brave-search`;
 
 // Starting question chips for users to select
 const STARTING_QUESTIONS = [
@@ -75,6 +50,7 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [showContactForm, setShowContactForm] = useState(false);
   const [contactInfo, setContactInfo] = useState({
@@ -84,6 +60,13 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showStartingChips, setShowStartingChips] = useState(true);
+  const [conversationContext, setConversationContext] = useState<ConversationContext>({
+    painPoints: [],
+    goals: [],
+    currentTools: [],
+    stakeholders: [],
+  });
+  const [, setSearchResults] = useState<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -112,11 +95,9 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
 
   const initializeSession = async () => {
     try {
-      // Check for existing active session in localStorage
       const savedSession = localStorage.getItem('ideate_chat_session');
       if (savedSession) {
         const parsed = JSON.parse(savedSession);
-        // Load messages from Supabase
         const { data: messagesData } = await supabase
           .from('chat_messages')
           .select('*')
@@ -132,6 +113,17 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
             timestamp: m.created_at,
           })));
           setShowStartingChips(false);
+          
+          // Load context from session
+          const { data: contextData } = await supabase
+            .from('chat_context')
+            .select('*')
+            .eq('session_id', parsed.id)
+            .single();
+          
+          if (contextData) {
+            setConversationContext(contextData.context);
+          }
           return;
         }
       }
@@ -150,7 +142,6 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
         localStorage.setItem('ideate_chat_session', JSON.stringify({ id: session.id }));
         setShowStartingChips(true);
         
-        // Add welcome message focused on business pain points and growth
         const welcomeMessage = {
           id: crypto.randomUUID(),
           role: 'model' as const,
@@ -160,7 +151,6 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
         
         setMessages([welcomeMessage]);
         
-        // Save welcome message to Supabase
         await supabase.from('chat_messages').insert({
           session_id: session.id,
           role: 'model',
@@ -169,7 +159,6 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
       }
     } catch (error) {
       console.error('Error initializing session:', error);
-      // Fallback to local-only mode
       const fallbackId = crypto.randomUUID();
       setSessionId(fallbackId);
       setShowStartingChips(true);
@@ -196,7 +185,163 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
     }
   };
 
-  // Parse AI response to extract suggestion chips (format: [SUGGESTIONS: option1 | option2 | option3])
+  // Call MCP Context Edge Function for smart context retrieval
+  const getMCPContext = async (userMessage: string): Promise<any> => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const response = await fetch(MCP_CONTEXT_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token || ''}`,
+        },
+        body: JSON.stringify({
+          sessionId,
+          userMessage,
+          industry: conversationContext.industry,
+          companySize: conversationContext.companySize,
+          previousContext: conversationContext,
+        }),
+      });
+
+      if (!response.ok) throw new Error('MCP context request failed');
+      
+      const data = await response.json();
+      
+      // Update local context state
+      if (data.enhancedContext?.context) {
+        setConversationContext(data.enhancedContext.context);
+        
+        // Save context to database
+        await supabase.from('chat_context').upsert({
+          session_id: sessionId,
+          context: data.enhancedContext.context,
+          updated_at: new Date().toISOString(),
+        });
+      }
+      
+      return data.enhancedContext;
+    } catch (error) {
+      console.error('Error getting MCP context:', error);
+      return null;
+    }
+  };
+
+  // Call Brave Search Edge Function
+  const performWebSearch = async (query: string): Promise<any> => {
+    try {
+      setIsSearching(true);
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const response = await fetch(BRAVE_SEARCH_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token || ''}`,
+        },
+        body: JSON.stringify({
+          query: `${query} AI use cases business automation`,
+          count: 3,
+        }),
+      });
+
+      if (!response.ok) throw new Error('Brave search request failed');
+      
+      const data = await response.json();
+      setSearchResults(data);
+      setIsSearching(false);
+      return data;
+    } catch (error) {
+      console.error('Error performing web search:', error);
+      setIsSearching(false);
+      return null;
+    }
+  };
+
+  // Build enhanced system prompt with context
+  const buildSystemPrompt = (mcpContext: any): string => {
+    let enhancedPrompt = `You are an expert AI business consultant for Daeda Group, specializing in helping businesses identify and implement AI solutions.
+
+YOUR ROLE:
+1. Understand the user's business context, pain points, and goals
+2. Suggest relevant AI use cases that match their specific situation
+3. Educate them about AI in simple, jargon-free language
+4. Ask probing questions to uncover deeper needs
+5. Help them envision concrete implementation approaches
+
+CONVERSATION GUIDELINES:
+- Assume they may be new to AI - explain concepts gently
+- Focus on business outcomes, not technical details
+- Use the provided context to personalize your responses
+- When you mention AI capabilities, briefly explain what they mean
+- Share relevant examples from similar businesses
+- Suggest 2-3 specific follow-up questions in [SUGGESTIONS: ...] format`;
+
+    // Add context information if available
+    if (mcpContext?.context) {
+      const ctx = mcpContext.context;
+      enhancedPrompt += `\n\nCURRENT BUSINESS CONTEXT:`;
+      
+      if (ctx.industry) enhancedPrompt += `\n- Industry: ${ctx.industry}`;
+      if (ctx.companySize) enhancedPrompt += `\n- Company Size: ${ctx.companySize}`;
+      if (ctx.painPoints?.length > 0) enhancedPrompt += `\n- Identified Pain Points: ${ctx.painPoints.join(', ')}`;
+      if (ctx.goals?.length > 0) enhancedPrompt += `\n- Goals: ${ctx.goals.join(', ')}`;
+      if (ctx.currentTools?.length > 0) enhancedPrompt += `\n- Current Tools: ${ctx.currentTools.join(', ')}`;
+      if (ctx.budgetRange) enhancedPrompt += `\n- Budget Range: ${ctx.budgetRange}`;
+      if (ctx.timeline) enhancedPrompt += `\n- Timeline: ${ctx.timeline}`;
+    }
+
+    // Add relevant AI use cases
+    if (mcpContext?.relevantUseCases?.length > 0) {
+      enhancedPrompt += `\n\nRELEVANT AI USE CASES FOR THIS BUSINESS:`;
+      mcpContext.relevantUseCases.forEach((useCase: any, i: number) => {
+        enhancedPrompt += `\n${i + 1}. ${useCase.useCase} - ${useCase.benefit}`;
+      });
+    }
+
+    // Add pain point matches
+    if (mcpContext?.painPointMatches?.length > 0) {
+      enhancedPrompt += `\n\nAI SOLUTIONS FOR IDENTIFIED PAIN POINTS:`;
+      mcpContext.painPointMatches.forEach((match: any, i: number) => {
+        enhancedPrompt += `\n${i + 1}. ${match.painPoint} → ${match.aiSolution} (${match.impact})`;
+      });
+    }
+
+    // Add conversation stage guidance
+    if (mcpContext?.conversationStage) {
+      enhancedPrompt += `\n\nCONVERSATION STAGE: ${mcpContext.conversationStage.toUpperCase()}`;
+      
+      switch (mcpContext.conversationStage) {
+        case 'discovery':
+          enhancedPrompt += `\nFocus on understanding their business, industry, and main challenges.`;
+          break;
+        case 'exploration':
+          enhancedPrompt += `\nDive deeper into specific pain points and explore AI solution possibilities.`;
+          break;
+        case 'solutioning':
+          enhancedPrompt += `\nProvide concrete AI solution recommendations and implementation approaches.`;
+          break;
+        case 'closing':
+          enhancedPrompt += `\nSummarize findings and gauge readiness for a formal proposal.`;
+          break;
+      }
+    }
+
+    // Add suggested questions
+    if (mcpContext?.suggestedQuestions?.length > 0) {
+      enhancedPrompt += `\n\nSUGGESTED QUESTIONS TO ASK NEXT:`;
+      mcpContext.suggestedQuestions.forEach((q: string) => {
+        enhancedPrompt += `\n- ${q}`;
+      });
+    }
+
+    enhancedPrompt += `\n\nIMPORTANT: When you have enough information and have outlined concrete AI solutions, offer to connect them with the Daeda team for a detailed proposal. Only do this when you clearly understand their needs.`;
+
+    return enhancedPrompt;
+  };
+
+  // Parse AI response to extract suggestion chips
   const parseAIResponse = (response: string): { cleanContent: string; chips: string[] } => {
     const suggestionMatch = response.match(/\[SUGGESTIONS:\s*([^\]]+)\]/);
     if (suggestionMatch) {
@@ -207,11 +352,13 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
     return { cleanContent: response, chips: [] };
   };
 
-  const callGemini = async (userMessage: string, conversationHistory: Message[]) => {
+  const callGemini = async (userMessage: string, conversationHistory: Message[], mcpContext: any): Promise<{ content: string; chips: string[] }> => {
     try {
+      const systemPrompt = buildSystemPrompt(mcpContext);
+      
       const contents = [
-        { role: 'user', parts: [{ text: SYSTEM_PROMPT }] },
-        { role: 'model', parts: [{ text: 'I understand my role as an AI business consultant for Daeda Group. I will help business leaders explore AI solutions for their pain points, inefficiencies, and growth opportunities while educating them gently about AI concepts.' }] },
+        { role: 'user', parts: [{ text: systemPrompt }] },
+        { role: 'model', parts: [{ text: 'I understand. I will use the provided business context to give personalized AI consulting advice.' }] },
         ...conversationHistory.map(m => ({
           role: m.role === 'user' ? 'user' : 'model',
           parts: [{ text: m.content }],
@@ -240,7 +387,6 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
       const data = await response.json();
       const rawResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || 'I apologize, but I could not generate a response at this time.';
       
-      // Parse for suggestion chips
       const { cleanContent, chips } = parseAIResponse(rawResponse);
       return { content: cleanContent, chips };
     } catch (error) {
@@ -270,15 +416,31 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
 
     await saveMessage(userMessage);
 
-    // Get AI response
-    const aiResponse = await callGemini(userMessage.content, messages);
+    // Get MCP context first (this updates our understanding of the conversation)
+    const mcpContext = await getMCPContext(messageText);
+
+    // Optionally perform web search if we're in exploration stage
+    let searchData = null;
+    if (mcpContext?.conversationStage === 'exploration' && mcpContext?.context?.industry) {
+      searchData = await performWebSearch(`${mcpContext.context.industry} ${mcpContext.context.painPoints?.[0] || ''}`);
+    }
+
+    // Get AI response with enhanced context
+    const aiResponse = await callGemini(messageText, messages, mcpContext);
+
+    // If we have search results, append a brief mention
+    let finalContent = aiResponse.content;
+    if (searchData?.results?.length > 0) {
+      finalContent += `\n\n*[I've found some relevant industry insights that support this approach.]*`;
+    }
 
     const modelMessage: Message = {
       id: crypto.randomUUID(),
       role: 'model',
-      content: aiResponse.content,
+      content: finalContent,
       timestamp: new Date().toISOString(),
       suggestionChips: aiResponse.chips.length > 0 ? aiResponse.chips : undefined,
+      hasSearchResults: !!searchData,
     };
 
     setMessages(prev => [...prev, modelMessage]);
@@ -305,16 +467,15 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
     if (!contactInfo.name || !contactInfo.email) return;
 
     try {
-      // Save to Supabase as an ideation submission
       await supabase.from('ideation_submissions').insert({
         session_id: sessionId,
         name: contactInfo.name,
         email: contactInfo.email,
         phone: contactInfo.phone,
         chat_summary: messages.map(m => `${m.role}: ${m.content}`).join('\n\n'),
+        context: conversationContext,
       });
 
-      // Update session status
       if (sessionId) {
         await supabase
           .from('chat_sessions')
@@ -327,7 +488,6 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
       setIsSubmitted(true);
     } catch (error) {
       console.error('Error submitting:', error);
-      // Still show success even if DB fails
       setIsSubmitted(true);
     }
   };
@@ -348,7 +508,6 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
     }
   };
 
-  // Check if last message was an offer to submit
   const lastMessage = messages[messages.length - 1];
   const isOfferMessage = lastMessage?.role === 'model' && (
     lastMessage.content.toLowerCase().includes('connect you with our team') ||
@@ -395,12 +554,20 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
               <p className="text-white/50 text-xs">{siteConfig.ideate.drawerSubtitle}</p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="text-white/50 hover:text-white transition-colors p-2 rounded-full hover:bg-white/10"
-          >
-            <X size={20} />
-          </button>
+          <div className="flex items-center gap-2">
+            {isSearching && (
+              <div className="flex items-center gap-1 text-[#F6B047] text-xs animate-pulse">
+                <Search size={12} />
+                <span>Researching...</span>
+              </div>
+            )}
+            <button
+              onClick={onClose}
+              className="text-white/50 hover:text-white transition-colors p-2 rounded-full hover:bg-white/10"
+            >
+              <X size={20} />
+            </button>
+          </div>
         </div>
 
         {/* Messages Area */}
@@ -425,6 +592,8 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
                             <span className="block ml-3 my-1">{line}</span>
                           ) : line.startsWith('**') && line.endsWith('**') ? (
                             <strong className="text-[#F6B047] block mt-2 mb-1">{line.replace(/\*\*/g, '')}</strong>
+                          ) : line.startsWith('*[') && line.endsWith(']*') ? (
+                            <span className="text-white/50 italic text-xs block mt-2">{line.replace(/\*\[|\]\*/g, '')}</span>
                           ) : (
                             line
                           )}
@@ -505,9 +674,9 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
               {!isLoading && messages.length > 1 && messages.length < 4 && (
                 <div className="flex flex-wrap gap-2 mb-3">
                   <span className="text-white/40 text-xs py-1">Try asking:</span>
-                  {["What can AI do for my business?", "How do I get started?", "What does AI implementation look like?"].map((suggestion, i) => (
+                  {["What can AI do for my business?", "How do I get started?", "What does AI implementation look like?"].map((suggestion, idx) => (
                     <button
-                      key={i}
+                      key={idx}
                       onClick={() => handleChipClick(suggestion)}
                       className="text-[#F6B047]/70 hover:text-[#F6B047] text-xs underline decoration-dotted"
                     >
