@@ -36,14 +36,14 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const MCP_CONTEXT_URL = `${SUPABASE_URL}/functions/v1/mcp-context`;
 const BRAVE_SEARCH_URL = `${SUPABASE_URL}/functions/v1/brave-search`;
 
-// Starting question chips for users to select
+// Starting question chips for users to select - phrased as common business scenarios
 const STARTING_QUESTIONS = [
-  "I have a business process that's eating up too much time",
-  "I want to improve customer experience or support",
-  "I need help analyzing data to make better decisions",
-  "I'm curious about AI but don't know where to start",
-  "I want to automate repetitive tasks",
-  "I have an idea for a new AI-powered product or feature",
+  "I'm spending too much time on repetitive tasks",
+  "I want to improve how we handle customer inquiries",
+  "I have data but struggle to get useful insights from it",
+  "I'm curious about AI but not sure where it fits my business",
+  "My team is overwhelmed with manual processes",
+  "I want to explore new AI-powered opportunities",
 ];
 
 export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
@@ -145,7 +145,7 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
         const welcomeMessage = {
           id: crypto.randomUUID(),
           role: 'model' as const,
-          content: "Welcome! I'm your AI business ideation partner. 💡\n\nI'm here to help you explore how AI can:\n• Solve frustrating business pain points\n• Eliminate time-wasting inefficiencies\n• Unlock new growth opportunities\n• Transform how your team works\n\n**What's on your mind?** Whether it's a process that's eating up too much time, a customer experience you want to improve, or a growth opportunity you want to explore—let's talk through it!\n\nOr select a topic below to get started:",
+          content: "Hi there! I'm your AI business ideation partner. 💡\n\nI'm here to help you explore how AI might help your business—no technical background needed!\n\n**Here's what we can chat about:**\n• Finding ways to save time on repetitive tasks\n• Improving how you serve customers\n• Getting more from your data\n• Exploring new AI opportunities you might not know about\n\n**What's on your mind?** Feel free to share what's working well, what's frustrating, or just what you're curious about. I'm here to share ideas and suggestions!\n\nOr pick a topic below to explore:",
           timestamp: new Date().toISOString(),
         };
         
@@ -165,7 +165,7 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
       setMessages([{
         id: crypto.randomUUID(),
         role: 'model',
-        content: "Welcome! I'm your AI business ideation partner. 💡\n\nI'm here to help you explore how AI can solve business pain points, eliminate inefficiencies, and unlock growth opportunities.\n\nWhat challenge or opportunity would you like to explore?",
+        content: "Hi there! I'm your AI business ideation partner. 💡\n\nI'm here to help you explore how AI might help your business—no technical background needed!\n\n**Here's what we can chat about:**\n• Finding ways to save time on repetitive tasks\n• Improving how you serve customers\n• Getting more from your data\n• Exploring new AI opportunities\n\nWhat's on your mind? Feel free to share what's working well, what's frustrating, or what you're curious about!",
         timestamp: new Date().toISOString(),
       }]);
     }
@@ -261,22 +261,35 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
 
   // Build enhanced system prompt with context
   const buildSystemPrompt = (mcpContext: any): string => {
-    let enhancedPrompt = `You are an expert AI business consultant for Daeda Group, specializing in helping businesses identify and implement AI solutions.
+    let enhancedPrompt = `You are a friendly, approachable AI business consultant for Daeda Group. Your job is to help business owners explore how AI could help them—even if they've never used AI before.
 
-YOUR ROLE:
-1. Understand the user's business context, pain points, and goals
-2. Suggest relevant AI use cases that match their specific situation
-3. Educate them about AI in simple, jargon-free language
-4. Ask probing questions to uncover deeper needs
-5. Help them envision concrete implementation approaches
+YOUR APPROACH - BE SUGGESTIVE, NOT INTERROGATIVE:
+✓ Lead with suggestions and best practices
+✓ Share what similar businesses typically do
+✓ Offer ideas they might not have considered
+✓ Educate gently without jargon
+✗ Avoid pointed questions like "What's your budget?"
+✗ Don't make them feel behind or uninformed
 
-CONVERSATION GUIDELINES:
-- Assume they may be new to AI - explain concepts gently
-- Focus on business outcomes, not technical details
-- Use the provided context to personalize your responses
-- When you mention AI capabilities, briefly explain what they mean
-- Share relevant examples from similar businesses
-- Suggest 2-3 specific follow-up questions in [SUGGESTIONS: ...] format`;
+CONVERSATION STYLE:
+- Assume they're AI-curious but not AI-experienced
+- Use phrases like:
+  * "A lot of businesses in your situation find success with..."
+  * "Have you considered trying..."
+  * "One approach that works well is..."
+  * "Something you might explore is..."
+- Share 1-2 concrete examples of what similar companies have done
+- Keep suggestions practical and relatable
+- If they mention a challenge, suggest 2-3 possible approaches
+
+EXAMPLE SUGGESTIONS BY TOPIC:
+- Manual data entry → "Have you looked into AI that can read and process documents automatically?"
+- Slow customer response → "Many businesses use AI assistants that can handle common questions instantly—have you explored that?"
+- Overwhelmed team → "One option is automating the repetitive tasks first. What's taking up most of your team's time right now?"
+- Not sure where to start → "A good first step is often automating one repetitive task. What do you or your team do over and over that feels tedious?"
+
+END EVERY RESPONSE WITH:
+2-3 clickable suggestion chips in [SUGGESTIONS: option1 | option2 | option3] format that offer natural next steps or related ideas to explore.`;
 
     // Add context information if available
     if (mcpContext?.context) {
@@ -673,8 +686,8 @@ CONVERSATION GUIDELINES:
               {/* Quick suggestion chips above input */}
               {!isLoading && messages.length > 1 && messages.length < 4 && (
                 <div className="flex flex-wrap gap-2 mb-3">
-                  <span className="text-white/40 text-xs py-1">Try asking:</span>
-                  {["What can AI do for my business?", "How do I get started?", "What does AI implementation look like?"].map((suggestion, idx) => (
+                  <span className="text-white/40 text-xs py-1">Ideas to explore:</span>
+                  {["What are businesses like mine doing with AI?", "Where do companies usually start with AI?", "What are some quick wins with AI?"].map((suggestion, idx) => (
                     <button
                       key={idx}
                       onClick={() => handleChipClick(suggestion)}

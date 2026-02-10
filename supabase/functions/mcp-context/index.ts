@@ -350,34 +350,52 @@ function getPainPointSolutions(painPoints: string[]): any[] {
 }
 
 function generateContextualQuestions(context: ConversationContext, messageCount: number): string[] {
-  const questions: string[] = []
+  const suggestions: string[] = []
 
   if (messageCount < 3) {
-    // Early stage questions
+    // Early stage - focus on understanding their situation
     if (!context.industry) {
-      questions.push("What industry is your business in?")
+      suggestions.push("Could you share what industry you're in? That helps me suggest relevant examples.")
     }
-    if (!context.companySize) {
-      questions.push("How many people are on your team?")
+    if (context.painPoints.length === 0) {
+      suggestions.push("What part of your business takes up more time than you'd like?")
     }
-    questions.push("What's the biggest challenge you're facing right now?")
   } else {
-    // Deeper questions based on context
-    if (context.painPoints.length > 0 && context.currentTools.length === 0) {
-      questions.push("What tools or software are you currently using to handle this?")
+    // Exploration stage - suggestive questions about approaches
+    if (context.painPoints.some(p => p.includes('manual') || p.includes('data entry'))) {
+      suggestions.push("Have you considered AI that can automatically process and enter data from documents?")
     }
-    if (!context.budgetRange) {
-      questions.push("Do you have a budget range in mind for this project?")
+    if (context.painPoints.some(p => p.includes('customer') || p.includes('support'))) {
+      suggestions.push("Many businesses use AI assistants for common questions—have you explored something like that?")
     }
-    if (!context.timeline) {
-      questions.push("What's your ideal timeline for implementing a solution?")
+    if (context.painPoints.some(p => p.includes('report') || p.includes('analysis'))) {
+      suggestions.push("AI can analyze data and create reports automatically. Is that something that might help?")
     }
-    if (context.currentTools.length > 0) {
-      questions.push("How well are your current tools working for you?")
+    if (context.painPoints.length > 0 && !context.currentTools.length) {
+      suggestions.push("What are you currently using to handle this? There might be AI add-ons or integrations.")
+    }
+    if (!context.timeline && messageCount > 5) {
+      suggestions.push("Are you looking to explore this soon, or is it more of a 'good to know for later' thing?")
     }
   }
 
-  return questions.slice(0, 2)
+  // If we don't have enough contextual suggestions, add general helpful ones
+  if (suggestions.length < 2) {
+    const generalSuggestions = [
+      "Have you seen any AI tools that caught your interest recently?",
+      "What's one task you do repeatedly that feels like it could be automated?",
+      "Are there any competitors or similar businesses doing things in ways you admire?",
+      "If you could wave a magic wand and automate one thing, what would it be?",
+    ]
+    while (suggestions.length < 2) {
+      const random = generalSuggestions[Math.floor(Math.random() * generalSuggestions.length)]
+      if (!suggestions.includes(random)) {
+        suggestions.push(random)
+      }
+    }
+  }
+
+  return suggestions.slice(0, 2)
 }
 
 function getConversationStage(messageCount: number): string {
