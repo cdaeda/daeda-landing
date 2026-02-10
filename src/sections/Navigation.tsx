@@ -15,7 +15,7 @@ const Navigation = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const { company, navigation } = siteConfig;
+  const { navigation } = siteConfig;
   const navItems = navigation.items;
 
   const scrollToSection = (href: string) => {
@@ -39,20 +39,17 @@ const Navigation = () => {
           {/* Logo */}
           <a
             href="#"
-            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+            className="flex items-center hover:opacity-80 transition-opacity"
             onClick={(e) => {
               e.preventDefault();
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
           >
             <img 
-              src="/logo-small.svg" 
+              src={navigation.logo} 
               alt="Daeda Group" 
-              className="h-8 w-8"
+              className="h-8 w-auto"
             />
-            <span className="text-[#F4F6FB] font-semibold text-lg tracking-tight hidden sm:inline">
-              {company.name}
-            </span>
           </a>
 
           {/* Desktop Nav */}
