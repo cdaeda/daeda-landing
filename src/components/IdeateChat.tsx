@@ -99,6 +99,89 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
     }
   }, [isOpen, showContactForm]);
 
+  // Disable body scroll when drawer is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+    }
+    
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+    };
+  }, [isOpen]);
+
+  // Capture scroll wheel events in drawer
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+    if (!container || !isOpen) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const isAtTop = scrollTop <= 0;
+      const isAtBottom = scrollTop + clientHeight >= scrollHeight;
+      const isScrollingDown = e.deltaY > 0;
+      const isScrollingUp = e.deltaY < 0;
+
+      // Only prevent default if we're not at the boundary in that direction
+      if ((isScrollingDown && !isAtBottom) || (isScrollingUp && !isAtTop)) {
+        e.stopPropagation();
+      } else if ((isScrollingDown && isAtBottom) || (isScrollingUp && isAtTop)) {
+        // At boundary, prevent default to stop main page scroll
+        e.preventDefault();
+      }
+    };
+
+    container.addEventListener('wheel', handleWheel, { passive: false });
+    return () => container.removeEventListener('wheel', handleWheel);
+  }, [isOpen]);
+
+  // Capture keyboard scroll events
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const scrollKeys = ['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '];
+      
+      if (scrollKeys.includes(e.key)) {
+        // Only handle if drawer is open and not typing in input
+        if (document.activeElement !== inputRef.current) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          const container = messagesContainerRef.current;
+          if (!container) return;
+          
+          const scrollAmount = e.key === 'PageUp' || e.key === 'PageDown' ? 
+            container.clientHeight * 0.8 : 
+            e.key === ' ' ? 100 : 50;
+          
+          if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+            container.scrollTop -= scrollAmount;
+          } else if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') {
+            container.scrollTop += scrollAmount;
+          } else if (e.key === 'Home') {
+            container.scrollTop = 0;
+          } else if (e.key === 'End') {
+            container.scrollTop = container.scrollHeight;
+          }
+        }
+      }
+      
+      // Close on Escape
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown, { capture: true });
+    return () => window.removeEventListener('keydown', handleKeyDown, { capture: true });
+  }, [isOpen, onClose]);
+
   // Load or create chat session
   useEffect(() => {
     if (isOpen && !sessionId) {
