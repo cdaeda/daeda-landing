@@ -4,18 +4,33 @@ This directory contains Supabase Edge Functions that power the AI chat capabilit
 
 ## Functions
 
-### 1. `brave-search`
-Performs real-time web searches using the Brave Search API to gather relevant industry information and AI use cases.
+### 1. `knowledge-search` ⭐ RECOMMENDED
+Smart search that checks local knowledgebase first, then Brave API if needed. Results are cached and summarized for AI consumption.
+
+**Purpose:**
+- Search local knowledgebase first (caching layer)
+- Only call Brave API when fresh research is needed
+- Summarize and cache results for future use
+- Provide AI-optimized compact summaries
+
+**How it works:**
+1. Hashes the query and checks `ai_knowledgebase` table
+2. Returns cached results if found (instant response)
+3. Calls Brave API only if no cache hit
+4. Summarizes results into AI-optimized format
+5. Caches the summary for future queries
+
+**Environment Variables Required:**
+- `BRAVE_API_KEY` - Stored in Supabase secrets (key: `BSAdGKT2xhOUAWSuXqbUPs8glqsULrU`)
+
+### 2. `brave-search` (Legacy)
+Direct Brave API search without caching. Use `knowledge-search` instead.
 
 **Purpose:**
 - Research industry-specific AI applications
 - Find relevant case studies and examples
-- Stay current on AI trends for the user's business domain
 
-**Environment Variables Required:**
-- `BRAVE_API_KEY` - Get from https://brave.com/search/api/
-
-### 2. `mcp-context`
+### 3. `mcp-context`
 Model Context Protocol (MCP) function that provides intelligent context management for the AI chat.
 
 **Purpose:**
@@ -47,7 +62,7 @@ supabase link --project-ref your-project-ref
 ### 3. Set up environment variables
 ```bash
 # Add your Brave API key to Supabase secrets
-supabase secrets set BRAVE_API_KEY=your_api_key_here
+supabase secrets set BRAVE_API_KEY=BSAdGKT2xhOUAWSuXqbUPs8glqsULrU
 ```
 
 ### 4. Deploy the functions
@@ -56,7 +71,7 @@ supabase secrets set BRAVE_API_KEY=your_api_key_here
 supabase functions deploy
 
 # Or deploy individually
-supabase functions deploy brave-search
+supabase functions deploy knowledge-search
 supabase functions deploy mcp-context
 ```
 
@@ -76,12 +91,21 @@ supabase functions serve
 ```
 
 The functions will be available at:
-- `http://localhost:54321/functions/v1/brave-search`
+- `http://localhost:54321/functions/v1/knowledge-search`
 - `http://localhost:54321/functions/v1/mcp-context`
 
 ## Database Schema
 
-The MCP system uses the following tables:
+### `ai_knowledgebase` ⭐ NEW
+Smart caching layer for AI research:
+- `query` - Original search query
+- `query_hash` - Hashed query for fast lookups
+- `source_type` - 'brave_search' or 'docs'
+- `content` - Full raw content
+- `summary` - Human-readable summary
+- `ai_optimized_content` - Condensed, AI-friendly format
+- `use_count` - How many times this was retrieved
+- `created_at` / `updated_at` / `last_accessed_at` - Timestamps
 
 ### `chat_context`
 Stores conversation context for intelligent responses:
@@ -109,14 +133,20 @@ Stores individual messages with role (user/model).
    - Matched pain point solutions
    - Suggested follow-up questions
    - Conversation stage
-4. **Frontend calls Gemini** with the enhanced system prompt
-5. **Optional:** If in exploration stage, calls `brave-search` for real-time research
-6. **AI responds** with personalized, context-aware suggestions
+4. **Smart Search** (only in exploration stage):
+   - Calls `knowledge-search` which checks cache first
+   - If cache miss, calls Brave API and caches results
+   - Returns AI-optimized summary
+5. **Frontend calls Gemini** with enhanced system prompt + research
+6. **AI responds** with personalized, research-backed suggestions
 
 ## Cost Considerations
 
 - **Brave Search API**: Free tier includes 2,000 queries/month
+  - With smart caching, most queries will hit cache after initial research
+  - Estimated 80%+ cache hit rate after first week
 - **Supabase Edge Functions**: Included in free tier (500K invocations/month)
+- **Supabase Database**: Knowledgebase storage is minimal (text summaries only)
 - **Gemini API**: Separate from these functions
 
 ## Security

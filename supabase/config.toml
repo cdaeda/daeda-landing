@@ -47,3 +47,6 @@ verify_jwt = false
 
 [functions.mcp-context]
 verify_jwt = false
+
+[functions.knowledge-search]
+verify_jwt = false

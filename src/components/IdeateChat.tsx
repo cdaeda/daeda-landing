@@ -34,7 +34,7 @@ const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/
 // Supabase Edge Function URLs
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const MCP_CONTEXT_URL = `${SUPABASE_URL}/functions/v1/mcp-context`;
-const BRAVE_SEARCH_URL = `${SUPABASE_URL}/functions/v1/brave-search`;
+const KNOWLEDGE_SEARCH_URL = `${SUPABASE_URL}/functions/v1/knowledge-search`;
 
 // Starting question chips for users to select - phrased as common business scenarios
 const STARTING_QUESTIONS = [
@@ -244,32 +244,33 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
     }
   };
 
-  // Call Brave Search Edge Function
-  const performWebSearch = async (query: string): Promise<any> => {
+  // Call Knowledge Search Edge Function (searches KB first, then Brave API if needed)
+  const performKnowledgeSearch = async (query: string): Promise<any> => {
     try {
       setIsSearching(true);
       const { data: { session } } = await supabase.auth.getSession();
       
-      const response = await fetch(BRAVE_SEARCH_URL, {
+      const response = await fetch(KNOWLEDGE_SEARCH_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session?.access_token || ''}`,
         },
         body: JSON.stringify({
-          query: `${query} AI use cases business automation`,
-          count: 3,
+          query: `${query} AI use cases`,
+          industry: conversationContext.industry,
+          context: conversationContext.painPoints?.join(', '),
         }),
       });
 
-      if (!response.ok) throw new Error('Brave search request failed');
+      if (!response.ok) throw new Error('Knowledge search request failed');
       
       const data = await response.json();
       setSearchResults(data);
       setIsSearching(false);
       return data;
     } catch (error) {
-      console.error('Error performing web search:', error);
+      console.error('Error performing knowledge search:', error);
       setIsSearching(false);
       return null;
     }
@@ -328,6 +329,9 @@ EXAMPLE SUGGESTIONS BY TOPIC:
 
 RESPONSE LENGTH:
 Keep responses concise—aim for 2-4 short paragraphs maximum. Break up longer thoughts into digestible chunks. If you have a lot to share, focus on the most relevant 1-2 points and invite them to ask for more details.
+
+USING RESEARCH INSIGHTS:
+When "CURRENT INDUSTRY RESEARCH" is provided, incorporate those insights naturally into your response. Reference specific examples or trends to support your recommendations, but don't quote the research verbatim—paraphrase and synthesize.
 
 END EVERY RESPONSE WITH:
 2-3 clickable suggestion chips in [SUGGESTIONS: option1 | option2 | option3] format that offer natural next steps or related ideas to explore.
@@ -396,6 +400,11 @@ When offering submission, say something like:
           enhancedPrompt += `\nSummarize findings and gauge readiness for a formal proposal.`;
           break;
       }
+    }
+
+    // Add research insights if available
+    if (mcpContext?.researchInsights) {
+      enhancedPrompt += `\n\nCURRENT INDUSTRY RESEARCH (use to support your recommendations):\n${mcpContext.researchInsights}`;
     }
 
     // Add suggested questions
@@ -489,19 +498,32 @@ When offering submission, say something like:
     // Get MCP context first (this updates our understanding of the conversation)
     const mcpContext = await getMCPContext(messageText);
 
-    // Optionally perform web search if we're in exploration stage
+    // Smart search: Only search if we need more intelligence
+    // Skip search if: we have cached knowledge, or we're still in early discovery
     let searchData = null;
-    if (mcpContext?.conversationStage === 'exploration' && mcpContext?.context?.industry) {
-      searchData = await performWebSearch(`${mcpContext.context.industry} ${mcpContext.context.painPoints?.[0] || ''}`);
+    const messageCount = messages.length;
+    const shouldSearch = 
+      mcpContext?.conversationStage === 'exploration' && 
+      mcpContext?.context?.industry &&
+      messageCount > 2; // Don't search on first few messages
+    
+    if (shouldSearch) {
+      const searchQuery = `${mcpContext.context.industry} AI ${mcpContext.context.painPoints?.[0] || 'automation'}`;
+      searchData = await performKnowledgeSearch(searchQuery);
     }
 
     // Get AI response with enhanced context
-    const aiResponse = await callGemini(messageText, messages, mcpContext);
+    // Include search data in the system prompt if available
+    const enrichedMcpContext = searchData?.aiOptimized 
+      ? { ...mcpContext, researchInsights: searchData.aiOptimized }
+      : mcpContext;
+    
+    const aiResponse = await callGemini(messageText, messages, enrichedMcpContext);
 
-    // If we have search results, append a brief mention
+    // Add subtle indicator if we used fresh research
     let finalContent = aiResponse.content;
-    if (searchData?.results?.length > 0) {
-      finalContent += `\n\n*[I've found some relevant industry insights that support this approach.]*`;
+    if (searchData?.source === 'brave' && searchData?.results?.length > 0) {
+      finalContent += `\n\n*[Researched current industry trends for this advice.]*`;
     }
 
     const modelMessage: Message = {

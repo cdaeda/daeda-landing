@@ -116,6 +116,56 @@ CREATE INDEX idx_ideation_submissions_status ON ideation_submissions(status);
 CREATE INDEX idx_ideation_submissions_created_at ON ideation_submissions(created_at DESC);
 CREATE INDEX idx_ideation_submissions_session_id ON ideation_submissions(session_id);
 
+-- AI Knowledgebase table for caching research and insights
+CREATE TABLE IF NOT EXISTS ai_knowledgebase (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  query TEXT NOT NULL,
+  query_hash TEXT UNIQUE NOT NULL,
+  source_type TEXT NOT NULL CHECK (source_type IN ('brave_search', 'docs', 'summarized')),
+  content TEXT NOT NULL,
+  summary TEXT NOT NULL,
+  ai_optimized_content TEXT NOT NULL,
+  metadata JSONB DEFAULT '{}',
+  use_count INTEGER DEFAULT 1,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  last_accessed_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Enable RLS
+ALTER TABLE ai_knowledgebase ENABLE ROW LEVEL SECURITY;
+
+-- Allow anonymous reads and inserts
+CREATE POLICY "Allow anonymous select on knowledgebase" ON ai_knowledgebase
+  FOR SELECT USING (true);
+
+CREATE POLICY "Allow anonymous insert on knowledgebase" ON ai_knowledgebase
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Allow anonymous update on knowledgebase" ON ai_knowledgebase
+  FOR UPDATE USING (true);
+
+-- Indexes for knowledgebase
+CREATE INDEX idx_knowledgebase_query_hash ON ai_knowledgebase(query_hash);
+CREATE INDEX idx_knowledgebase_source ON ai_knowledgebase(source_type);
+CREATE INDEX idx_knowledgebase_created_at ON ai_knowledgebase(created_at DESC);
+
+-- Trigger to update ai_knowledgebase timestamps
+CREATE OR REPLACE FUNCTION update_knowledgebase_timestamps()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = timezone('utc'::text, now());
+  NEW.last_accessed_at = timezone('utc'::text, now());
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS update_knowledgebase_timestamps ON ai_knowledgebase;
+CREATE TRIGGER update_knowledgebase_timestamps
+  BEFORE UPDATE ON ai_knowledgebase
+  FOR EACH ROW
+  EXECUTE FUNCTION update_knowledgebase_timestamps();
+
 -- Trigger to update chat_context.updated_at
 CREATE OR REPLACE FUNCTION update_chat_context_updated_at()
 RETURNS TRIGGER AS $$
