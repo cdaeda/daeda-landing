@@ -69,10 +69,23 @@ export function IdeateChat({ isOpen, onClose }: IdeateChatProps) {
   const [, setSearchResults] = useState<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
 
   // Scroll to bottom of messages
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (shouldAutoScroll && messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+    }
+  };
+
+  // Handle scroll to detect if user is reading older messages
+  const handleScroll = () => {
+    if (messagesContainerRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+      setShouldAutoScroll(isNearBottom);
+    }
   };
 
   useEffect(() => {
@@ -313,6 +326,9 @@ EXAMPLE SUGGESTIONS BY TOPIC:
 - Overwhelmed team → "One option is automating the repetitive tasks first. What's taking up most of your team's time right now?"
 - Not sure where to start → "A good first step is often automating one repetitive task. What do you or your team do over and over that feels tedious?"
 
+RESPONSE LENGTH:
+Keep responses concise—aim for 2-4 short paragraphs maximum. Break up longer thoughts into digestible chunks. If you have a lot to share, focus on the most relevant 1-2 points and invite them to ask for more details.
+
 END EVERY RESPONSE WITH:
 2-3 clickable suggestion chips in [SUGGESTIONS: option1 | option2 | option3] format that offer natural next steps or related ideas to explore.
 
@@ -429,7 +445,7 @@ When offering submission, say something like:
           contents,
           generationConfig: {
             temperature: 0.75,
-            maxOutputTokens: 2048,
+            maxOutputTokens: 800,
           },
         }),
       });
@@ -627,7 +643,12 @@ When offering submission, say something like:
         {/* Messages Area */}
         {!showContactForm ? (
           <>
-            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+            <div 
+              ref={messagesContainerRef}
+              onScroll={handleScroll}
+              className="flex-1 overflow-y-auto px-6 py-4 space-y-4 scroll-smooth"
+              style={{ overscrollBehavior: 'contain' }}
+            >
               {messages.map((message, index) => (
                 <div key={message.id}>
                   <div
