@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Lightbulb, Send, X, ChevronRight, Loader2, CheckCircle, Sparkles, Search } from 'lucide-react';
+import { Lightbulb, Send, ChevronRight, Loader2, CheckCircle, Sparkles, Search } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { siteConfig } from '../content.config';
 
@@ -621,21 +621,7 @@ When offering submission, say something like:
         {/* Glass edge highlight */}
         <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-transparent via-[#F6B047]/50 to-transparent" />
         
-        {/* Close button inside drawer on the right */}
-        <button
-          onClick={onClose}
-          className="absolute right-4 top-1/2 -translate-y-1/2 z-10 group"
-        >
-          <div className="bg-white/10 backdrop-blur-sm shadow-xl rounded-full p-2 border border-white/30 hover:bg-white/20 hover:scale-110 transition-all duration-300">
-            <ChevronRight 
-              size={20} 
-              className="text-white rotate-180 group-hover:-translate-x-0.5 transition-transform" 
-              strokeWidth={2.5}
-            />
-          </div>
-        </button>
-
-        {/* Header */}
+        {/* Header with close button */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-white/10 flex-shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#F6B047] to-[#F6B047]/50 flex items-center justify-center">
@@ -653,11 +639,16 @@ When offering submission, say something like:
                 <span>Researching...</span>
               </div>
             )}
+            {/* Drawer close button - arrow style */}
             <button
               onClick={onClose}
-              className="text-white/50 hover:text-white transition-colors p-2 rounded-full hover:bg-white/10"
+              className="group bg-white/10 hover:bg-[#F6B047]/20 border border-white/30 hover:border-[#F6B047]/50 rounded-full p-2 transition-all"
             >
-              <X size={20} />
+              <ChevronRight 
+                size={18} 
+                className="text-white rotate-180 group-hover:-translate-x-0.5 transition-transform" 
+                strokeWidth={2.5}
+              />
             </button>
           </div>
         </div>
@@ -668,9 +659,16 @@ When offering submission, say something like:
             <div 
               ref={messagesContainerRef}
               onScroll={handleScroll}
-              className="flex-1 overflow-y-auto px-6 py-4 space-y-4 scroll-smooth"
-              style={{ overscrollBehavior: 'contain' }}
+              className="flex-1 overflow-y-auto py-4 space-y-4 scroll-smooth"
+              style={{ 
+                overscrollBehavior: 'contain',
+                direction: 'rtl',
+                paddingLeft: '1.5rem',
+                paddingRight: '1.5rem'
+              }}
             >
+              {/* Inner wrapper to flip content back to LTR */}
+              <div style={{ direction: 'ltr' }}>
               {messages.map((message, index) => (
                 <div key={message.id}>
                   <div
@@ -767,6 +765,7 @@ When offering submission, say something like:
               )}
               
               <div ref={messagesEndRef} />
+              </div>{/* Close inner LTR wrapper */}
             </div>
 
             {/* Input Area */}
