@@ -621,15 +621,15 @@ When offering submission, say something like:
         {/* Glass edge highlight */}
         <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-transparent via-[#F6B047]/50 to-transparent" />
         
-        {/* Close button on left edge */}
+        {/* Close button inside drawer on the right */}
         <button
           onClick={onClose}
-          className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 z-10 group"
+          className="absolute right-4 top-1/2 -translate-y-1/2 z-10 group"
         >
-          <div className="bg-[#0B0F1C]/90 backdrop-blur-sm shadow-xl rounded-full p-2 border border-white/30 hover:bg-[#0B0F1C] hover:scale-110 transition-all duration-300">
+          <div className="bg-white/10 backdrop-blur-sm shadow-xl rounded-full p-2 border border-white/30 hover:bg-white/20 hover:scale-110 transition-all duration-300">
             <ChevronRight 
               size={20} 
-              className="text-white group-hover:translate-x-0.5 transition-transform" 
+              className="text-white rotate-180 group-hover:-translate-x-0.5 transition-transform" 
               strokeWidth={2.5}
             />
           </div>
