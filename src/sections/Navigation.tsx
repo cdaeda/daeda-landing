@@ -48,8 +48,8 @@ const Navigation = ({ lenis }: NavigationProps) => {
       <nav
         className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 ${
           isScrolled
-            ? 'bg-[#0B0F1C]/80 backdrop-blur-md py-4'
-            : 'bg-transparent py-6'
+            ? 'bg-[#0B0F1C]/80 backdrop-blur-md py-5'
+            : 'bg-transparent py-7'
         }`}
       >
         <div className="w-full px-6 lg:px-12 flex items-center justify-between">
@@ -69,7 +69,7 @@ const Navigation = ({ lenis }: NavigationProps) => {
             <img 
               src={navigation.logo} 
               alt="Daeda Group" 
-              className="h-8 w-auto"
+              className="h-10 md:h-12 w-auto"
             />
           </a>
 
