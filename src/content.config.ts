@@ -24,8 +24,8 @@ export const siteConfig = {
   hero: {
     logo: '/D for Daeda Group-transparent.png',
     headline: {
-      word1: 'AI',
-      word2: 'Experts',
+      word1: 'Daeda',
+      word2: 'Group',
     },
     subheadline: 'Human Led. AI Executed.',
     primaryCta: 'Book a call',
