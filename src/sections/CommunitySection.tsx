@@ -1,15 +1,8 @@
 import { useRef, useLayoutEffect } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Users, Lightbulb } from 'lucide-react';
+import { Users } from 'lucide-react';
 import { siteConfig } from '../content.config';
-
-const scrollToContact = () => {
-  const element = document.querySelector('#contact');
-  if (element) {
-    element.scrollIntoView({ behavior: 'smooth' });
-  }
-};
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -135,24 +128,6 @@ const CommunitySection = ({ className = '' }: CommunitySectionProps) => {
           {siteConfig.community.description}
         </p>
 
-        <div className="flex flex-col sm:flex-row gap-4">
-          <button 
-            onClick={scrollToContact}
-            className="bg-[#F6B047] text-black px-8 py-4 rounded-full font-semibold text-sm hover:bg-[#F6B047]/90 transition-all hover:scale-105 shadow-lg"
-          >
-            {siteConfig.community.cta}
-          </button>
-          {siteConfig.ideate.showInCommunity && (
-            <button
-              onClick={() => window.dispatchEvent(new CustomEvent('openIdeate'))}
-              className="group bg-gradient-to-r from-white/20 to-white/10 text-white border border-white/30 px-8 py-4 rounded-full font-semibold text-sm flex items-center gap-2 hover:bg-white/20 hover:scale-105 transition-all backdrop-blur-sm"
-            >
-              <Lightbulb size={16} strokeWidth={2.5} className="text-[#F6B047] group-hover:animate-pulse" />
-              {siteConfig.ideate.label}
-              <span>{siteConfig.ideate.emoji}</span>
-            </button>
-          )}
-        </div>
       </div>
     </section>
   );

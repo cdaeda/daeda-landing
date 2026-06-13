@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useLenis } from 'lenis/react';
@@ -10,16 +10,12 @@ import CapabilitiesSection from './sections/CapabilitiesSection';
 import CommunitySection from './sections/CommunitySection';
 import ProofSection from './sections/ProofSection';
 import ClientsSection from './sections/ClientsSection';
-import ContactSection from './sections/ContactSection';
 import StarField from './components/StarField';
-import { IdeateChat } from './components/IdeateChat';
-import { IdeateIcon } from './components/IdeateButton';
 
 gsap.registerPlugin(ScrollTrigger);
 
 function App() {
   const lenis = useLenis();
-  const [isIdeateOpen, setIsIdeateOpen] = useState(false);
 
   useEffect(() => {
     if (lenis) {
@@ -33,13 +29,6 @@ function App() {
       gsap.ticker.lagSmoothing(0);
     }
   }, [lenis]);
-
-  // Listen for openIdeate events from section buttons
-  useEffect(() => {
-    const handleOpenIdeate = () => setIsIdeateOpen(true);
-    window.addEventListener('openIdeate', handleOpenIdeate);
-    return () => window.removeEventListener('openIdeate', handleOpenIdeate);
-  }, []);
 
   return (
     <div className="relative bg-black min-h-screen overflow-x-hidden">
@@ -61,18 +50,12 @@ function App() {
 
       {/* Content */}
       <Navigation lenis={lenis} />
-      <IdeateIcon onClick={() => setIsIdeateOpen(true)} />
-      <IdeateChat 
-        isOpen={isIdeateOpen} 
-        onClose={() => setIsIdeateOpen(false)} 
-      />
       <main className="relative z-10">
         <HeroSection className="z-10" />
         <CapabilitiesSection className="z-20" />
         <CommunitySection className="z-30" />
         <ProofSection className="z-40" />
         <ClientsSection className="z-50" />
-        <ContactSection className="z-[60]" />
       </main>
     </div>
   );

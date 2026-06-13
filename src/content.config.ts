@@ -16,9 +16,7 @@ export const siteConfig = {
       { label: 'Work', href: '#clients' },
       { label: 'Services', href: '#capabilities' },
       { label: 'About', href: '#proof' },
-      { label: 'Contact', href: '#contact' },
     ],
-    cta: 'Book a call',
   },
 
   hero: {
@@ -28,7 +26,6 @@ export const siteConfig = {
       word2: 'Group',
     },
     subheadline: 'Human Led. AI Executed.',
-    primaryCta: 'Book a call',
     secondaryCta: 'Who are we',
     scrollHint: 'Scroll',
   },
@@ -85,19 +82,6 @@ export const siteConfig = {
     cta: 'Request a Community Sessionaaq  ',
   },
 
-  ideate: {
-    label: "Let's Ideate!",
-    emoji: '',
-    iconLabel: 'Ideate',
-    showInHero: true,
-    showInCommunity: true,
-    showInProof: true,
-    showInContact: true,
-    drawerTitle: "Let's Ideate!",
-    drawerSubtitle: 'Your AI brainstorming partner',
-    initialMessage: "Hi there! I'm your AI business ideation partner.\nI'm here to help you explore how AI might help your business—no technical background needed!\n**Here's what we can chat about:**\n• Finding ways to save time on repetitive tasks\n• Improving how you serve customers\n• Getting more from your data\n• Exploring new AI opportunities you might not know about\n**What's on your mind?** Feel free to share what's working well, what's frustrating, or just what you're curious about.",
-  },
-
   proof: {
     mainStat: {
       value: '30',
@@ -149,39 +133,6 @@ export const siteConfig = {
     ],
   },
 
-  contact: {
-    headline: "Let's build what's next.",
-    description:
-      "Tell us your dreams, your pains. We're here!",
-    form: {
-      name: {
-        label: 'Name',
-        placeholder: 'Your name',
-      },
-      email: {
-        label: 'Email',
-        placeholder: 'you@company.com',
-      },
-      company: {
-        label: 'Company',
-        placeholder: 'Your company',
-      },
-      message: {
-        label: 'Message',
-        placeholder: 'Tell us about your project...',
-      },
-      submit: 'Send message',
-      sending: 'Sending...',
-      success: {
-        title: 'Message sent!',
-        message: "We'll be in touch within 2 business days.",
-      },
-    },
-    footer: {
-      copyright: `© ${new Date().getFullYear()} Daeda Group`,
-      location: 'Charlotte, NC · Remote',
-    },
-  },
 } as const;
 
 export type SiteConfig = typeof siteConfig;
