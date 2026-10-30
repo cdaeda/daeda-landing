@@ -35,57 +35,72 @@ const CapabilitiesSection = ({ className = '' }: CapabilitiesSectionProps) => {
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
-      const scrollTl = gsap.timeline({
+      const cards = cardsRef.current?.querySelectorAll('.capability-card');
+
+      // Entrance plays while the section scrolls into view, so content is
+      // fully visible by the time it pins
+      const enterTl = gsap.timeline({
         scrollTrigger: {
           trigger: sectionRef.current,
-          start: 'top top',
-          end: '+=120%',
-          pin: true,
-          scrub: 1,
-          anticipatePin: 1,
+          start: 'top 85%',
+          end: 'top 5%',
+          scrub: 0.5,
         },
       });
 
-      // City platform entrance
-      scrollTl.fromTo(
+      enterTl.fromTo(
         cityRef.current,
         { y: 60, opacity: 0.5 },
         { y: 0, opacity: 1, ease: 'power2.out' },
         0
       );
-      scrollTl.to(
-        cityRef.current,
-        { y: -30, opacity: 0.5, ease: 'power2.in' },
-        0.7
-      );
-
-      // Headline + body entrance
-      scrollTl.fromTo(
+      enterTl.fromTo(
         headlineRef.current,
         { x: -50, opacity: 0.6 },
         { x: 0, opacity: 1, ease: 'power2.out' },
         0.05
       );
-      scrollTl.to(
-        headlineRef.current,
-        { x: -25, opacity: 0.5, ease: 'power2.in' },
-        0.7
+      cards?.forEach((card, i) => {
+        enterTl.fromTo(
+          card,
+          { x: 60, y: 30, opacity: 0.5 },
+          { x: 0, y: 0, opacity: 1, ease: 'power2.out' },
+          0.08 + i * 0.05
+        );
+      });
+
+      // Pinned: hold at full opacity, then fade out over the last stretch
+      const exitTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: 'top top',
+          end: '+=120%',
+          pin: true,
+          scrub: 0.5,
+          anticipatePin: 1,
+        },
+      });
+
+      exitTl.fromTo(
+        cityRef.current,
+        { y: 0, opacity: 1 },
+        { y: -30, opacity: 0.5, ease: 'power2.in', duration: 0.35, immediateRender: false },
+        0.65
       );
-
-      // Cards staggered entrance
-      const cards = cardsRef.current?.querySelectorAll('.capability-card');
-      if (cards) {
-        cards.forEach((card, i) => {
-          scrollTl.fromTo(
-            card,
-            { x: 60, y: 30, opacity: 0.5 },
-            { x: 0, y: 0, opacity: 1, ease: 'power2.out' },
-            0.08 + i * 0.03
-          );
-
-          scrollTl.to(card, { x: 25, opacity: 0.5, ease: 'power2.in' }, 0.7);
-        });
-      }
+      exitTl.fromTo(
+        headlineRef.current,
+        { x: 0, opacity: 1 },
+        { x: -25, opacity: 0.5, ease: 'power2.in', duration: 0.35, immediateRender: false },
+        0.65
+      );
+      cards?.forEach((card) => {
+        exitTl.fromTo(
+          card,
+          { x: 0, y: 0, opacity: 1 },
+          { x: 25, opacity: 0.5, ease: 'power2.in', duration: 0.35, immediateRender: false },
+          0.65
+        );
+      });
     }, sectionRef);
 
     return () => ctx.revert();
@@ -98,7 +113,7 @@ const CapabilitiesSection = ({ className = '' }: CapabilitiesSectionProps) => {
       <section
         ref={sectionRef}
         id="capabilities"
-        className={`relative w-full h-screen overflow-hidden ${className}`}
+        className={`relative w-full h-screen h-[100svh] overflow-hidden ${className}`}
       >
         {/* City platform */}
         <div
@@ -124,13 +139,13 @@ const CapabilitiesSection = ({ className = '' }: CapabilitiesSectionProps) => {
         </div>
 
         {/* Content */}
-        <div className="absolute inset-0 flex items-center px-[8%] lg:px-[10%]">
-          {/* Left side - Headline */}
+        <div className="absolute inset-0 flex flex-col [justify-content:safe_center] gap-4 sm:gap-6 px-5 pt-20 pb-4 sm:px-[8%] lg:flex-row lg:items-center lg:justify-start lg:gap-0 lg:px-[10%] lg:py-0">
+          {/* Headline */}
           <div ref={headlineRef} className="max-w-[480px] opacity-100">
-            <h2 className="text-[clamp(36px,4.5vw,60px)] font-light text-white mb-6 leading-tight drop-shadow-[0_2px_20px_rgba(0,0,0,0.8)]">
+            <h2 className="text-[clamp(26px,4.5vw,60px)] font-light text-white mb-2 sm:mb-3 lg:mb-6 leading-tight drop-shadow-[0_2px_20px_rgba(0,0,0,0.8)]">
               {capabilities.headline}
             </h2>
-            <p className="text-white/90 text-[clamp(15px,1.3vw,19px)] leading-relaxed mb-6 drop-shadow-[0_1px_10px_rgba(0,0,0,0.8)]">
+            <p className="text-white/90 text-[clamp(14px,1.3vw,19px)] leading-relaxed mb-2 sm:mb-3 lg:mb-6 drop-shadow-[0_1px_10px_rgba(0,0,0,0.8)]">
               {capabilities.description}
             </p>
             <button
@@ -142,32 +157,33 @@ const CapabilitiesSection = ({ className = '' }: CapabilitiesSectionProps) => {
             </button>
           </div>
 
-          {/* Right side - Cards */}
+          {/* Cards: stacked below headline on mobile, staggered column on the right on desktop */}
           <div
             ref={cardsRef}
-            className="absolute right-[6%] lg:right-[8%] top-1/2 -translate-y-1/2 flex flex-col gap-4"
+            className="flex flex-col gap-2.5 sm:gap-3 w-full max-w-[480px] lg:absolute lg:right-[8%] lg:top-1/2 lg:-translate-y-1/2 lg:gap-4 lg:w-auto lg:max-w-none"
           >
             {capabilities.cards.map((cap, i) => {
               const IconComponent = iconMap[cap.icon];
               return (
                 <div
                   key={cap.title}
-                  className="capability-card bg-black/60 border border-white/15 backdrop-blur-md rounded-2xl p-6 w-[260px] hover:border-[#F6B047]/50 transition-all hover:bg-black/70 opacity-100"
-                  style={{
-                    marginLeft: i === 1 ? '40px' : i === 2 ? '20px' : '0',
-                  }}
+                  className={`capability-card bg-black/60 border border-white/15 backdrop-blur-md rounded-2xl px-4 py-3 sm:p-4 lg:p-6 w-full lg:w-[260px] hover:border-[#F6B047]/50 transition-all hover:bg-black/70 opacity-100 ${
+                    i === 1 ? 'lg:ml-10' : i === 2 ? 'lg:ml-5' : ''
+                  }`}
                 >
-                  {IconComponent && (
-                    <IconComponent
-                      size={24}
-                      className="text-[#F6B047] mb-4"
-                      strokeWidth={1.5}
-                    />
-                  )}
-                  <h3 className="text-white font-medium text-lg mb-2">
-                    {cap.title}
-                  </h3>
-                  <p className="text-white/80 text-sm leading-relaxed">
+                  <div className="flex items-center gap-3 mb-1 sm:mb-1.5 lg:block lg:mb-2">
+                    {IconComponent && (
+                      <IconComponent
+                        size={22}
+                        className="text-[#F6B047] shrink-0 lg:mb-4"
+                        strokeWidth={1.5}
+                      />
+                    )}
+                    <h3 className="text-white font-medium text-base leading-snug lg:text-lg">
+                      {cap.title}
+                    </h3>
+                  </div>
+                  <p className="text-white/80 text-[13px] sm:text-sm leading-snug sm:leading-relaxed [@media(max-height:600px)]:hidden">
                     {cap.description}
                   </p>
                 </div>

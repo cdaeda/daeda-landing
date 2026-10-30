@@ -26,14 +26,6 @@ section {
   will-change: transform;
 }
 
-/* Mobile optimizations */
-@media (max-width: 768px) {
-  .capability-card {
-    width: 220px !important;
-    margin-left: 0 !important;
-  }
-}
-
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *,
