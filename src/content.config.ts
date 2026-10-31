@@ -26,8 +26,6 @@ export const siteConfig = {
       word2: 'Group',
     },
     subheadline: 'Human Led. AI Executed.',
-    secondaryCta: 'Who are we',
-    scrollHint: 'Scroll',
   },
 
   capabilities: {

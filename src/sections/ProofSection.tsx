@@ -3,6 +3,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Briefcase, TrendingUp, Globe } from 'lucide-react';
 import { siteConfig } from '../content.config';
+import { SCROLL_MOTION_QUERY } from '../lib/utils';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -23,7 +24,8 @@ const ProofSection = ({ className = '' }: ProofSectionProps) => {
   const proofPointsRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
-    const ctx = gsap.context(() => {
+    const mm = gsap.matchMedia();
+    mm.add(SCROLL_MOTION_QUERY, () => {
       const scrollTl = gsap.timeline({
         scrollTrigger: {
           trigger: sectionRef.current,
@@ -72,7 +74,7 @@ const ProofSection = ({ className = '' }: ProofSectionProps) => {
       );
     }, sectionRef);
 
-    return () => ctx.revert();
+    return () => mm.revert();
   }, []);
 
   const { proof } = siteConfig;

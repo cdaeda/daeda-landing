@@ -3,6 +3,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ArrowRight, Brain, Rocket, Cloud, X, ChevronRight } from 'lucide-react';
 import { siteConfig } from '../content.config';
+import { SCROLL_MOTION_QUERY } from '../lib/utils';
 import {
   Drawer,
   DrawerContent,
@@ -34,11 +35,12 @@ const CapabilitiesSection = ({ className = '' }: CapabilitiesSectionProps) => {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   useLayoutEffect(() => {
-    const ctx = gsap.context(() => {
+    const mm = gsap.matchMedia();
+    mm.add(SCROLL_MOTION_QUERY, () => {
       const cards = cardsRef.current?.querySelectorAll('.capability-card');
 
       // Entrance plays while the section scrolls into view, so content is
-      // fully visible by the time it pins
+      // fully visible by the time it reaches the top
       const enterTl = gsap.timeline({
         scrollTrigger: {
           trigger: sectionRef.current,
@@ -69,41 +71,39 @@ const CapabilitiesSection = ({ className = '' }: CapabilitiesSectionProps) => {
         );
       });
 
-      // Pinned: hold at full opacity, then fade out over the last stretch
+      // Not pinned, so one scroll moves on to the next section; fade out as it leaves
       const exitTl = gsap.timeline({
         scrollTrigger: {
           trigger: sectionRef.current,
           start: 'top top',
-          end: '+=120%',
-          pin: true,
+          end: 'bottom top',
           scrub: 0.5,
-          anticipatePin: 1,
         },
       });
 
       exitTl.fromTo(
         cityRef.current,
         { y: 0, opacity: 1 },
-        { y: -30, opacity: 0.5, ease: 'power2.in', duration: 0.35, immediateRender: false },
-        0.65
+        { y: -30, opacity: 0.5, ease: 'power2.in', immediateRender: false },
+        0
       );
       exitTl.fromTo(
         headlineRef.current,
         { x: 0, opacity: 1 },
-        { x: -25, opacity: 0.5, ease: 'power2.in', duration: 0.35, immediateRender: false },
-        0.65
+        { x: -25, opacity: 0.5, ease: 'power2.in', immediateRender: false },
+        0
       );
       cards?.forEach((card) => {
         exitTl.fromTo(
           card,
           { x: 0, y: 0, opacity: 1 },
-          { x: 25, opacity: 0.5, ease: 'power2.in', duration: 0.35, immediateRender: false },
-          0.65
+          { x: 25, opacity: 0.5, ease: 'power2.in', immediateRender: false },
+          0
         );
       });
     }, sectionRef);
 
-    return () => ctx.revert();
+    return () => mm.revert();
   }, []);
 
   const { capabilities } = siteConfig;
@@ -139,7 +139,7 @@ const CapabilitiesSection = ({ className = '' }: CapabilitiesSectionProps) => {
         </div>
 
         {/* Content */}
-        <div className="absolute inset-0 flex flex-col [justify-content:safe_center] gap-4 sm:gap-6 px-5 pt-20 pb-4 sm:px-[8%] lg:flex-row lg:items-center lg:justify-start lg:gap-0 lg:px-[10%] lg:py-0">
+        <div className="absolute inset-0 flex flex-col justify-start gap-4 sm:gap-6 px-5 pt-24 pb-4 sm:pt-28 sm:px-[8%] lg:flex-row lg:items-center lg:justify-start lg:gap-0 lg:px-[10%] lg:py-0">
           {/* Headline */}
           <div ref={headlineRef} className="max-w-[480px] opacity-100">
             <h2 className="text-[clamp(26px,4.5vw,60px)] font-light text-white mb-2 sm:mb-3 lg:mb-6 leading-tight drop-shadow-[0_2px_20px_rgba(0,0,0,0.8)]">
@@ -167,7 +167,7 @@ const CapabilitiesSection = ({ className = '' }: CapabilitiesSectionProps) => {
               return (
                 <div
                   key={cap.title}
-                  className={`capability-card bg-black/60 border border-white/15 backdrop-blur-md rounded-2xl px-4 py-3 sm:p-4 lg:p-6 w-full lg:w-[260px] hover:border-[#F6B047]/50 transition-all hover:bg-black/70 opacity-100 ${
+                  className={`capability-card bg-black/60 border border-white/15 backdrop-blur-md rounded-2xl px-4 py-3 sm:p-4 lg:p-6 w-full lg:w-[260px] opacity-100 [-webkit-tap-highlight-color:transparent] ${
                     i === 1 ? 'lg:ml-10' : i === 2 ? 'lg:ml-5' : ''
                   }`}
                 >

@@ -2,6 +2,7 @@ import { useRef, useLayoutEffect, useEffect, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { siteConfig } from '../content.config';
+import { SCROLL_MOTION_QUERY } from '../lib/utils';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -103,7 +104,8 @@ const ClientsSection = ({ className = '' }: ClientsSectionProps) => {
 
   // Pin section and animate content
   useLayoutEffect(() => {
-    const ctx = gsap.context(() => {
+    const mm = gsap.matchMedia();
+    mm.add(SCROLL_MOTION_QUERY, () => {
       const scrollTl = gsap.timeline({
         scrollTrigger: {
           trigger: sectionRef.current,
@@ -142,7 +144,7 @@ const ClientsSection = ({ className = '' }: ClientsSectionProps) => {
       );
     }, sectionRef);
 
-    return () => ctx.revert();
+    return () => mm.revert();
   }, []);
 
   interface Client {
@@ -151,12 +153,12 @@ const ClientsSection = ({ className = '' }: ClientsSectionProps) => {
   }
 
   const LogoItem = ({ client }: { client: Client }) => (
-    <div className="bg-white/40 border border-white/30 rounded-2xl px-8 py-6 flex items-center justify-center min-w-[220px] h-[160px] hover:border-[#F6B047]/40 transition-all backdrop-blur-sm">
+    <div className="bg-white/40 border border-white/30 rounded-2xl px-5 py-4 lg:px-8 lg:py-6 flex items-center justify-center min-w-[160px] h-[110px] lg:min-w-[220px] lg:h-[160px] lg:hover:border-[#F6B047]/40 transition-all backdrop-blur-sm">
       {client.logo ? (
         <img
           src={client.logo}
           alt={client.name}
-          className="max-h-20 max-w-[160px] object-contain brightness-150 contrast-125"
+          className="max-h-14 max-w-[120px] lg:max-h-20 lg:max-w-[160px] object-contain brightness-150 contrast-125"
         />
       ) : (
         <span className="text-white font-medium text-base tracking-wide whitespace-nowrap">
@@ -173,21 +175,21 @@ const ClientsSection = ({ className = '' }: ClientsSectionProps) => {
       className={`relative w-full h-screen overflow-hidden ${className}`}
     >
       {/* Content */}
-      <div className="relative z-10 h-full flex flex-col justify-center">
+      <div className="relative z-10 h-full flex flex-col [justify-content:safe_center] pt-20 lg:pt-0">
         {/* Headline */}
-        <div ref={headlineRef} className="text-center mb-6 px-6">
-          <h2 className="text-[clamp(48px,8vw,100px)] font-light text-white tracking-wider drop-shadow-lg uppercase">
+        <div ref={headlineRef} className="text-center mb-3 lg:mb-6 px-6">
+          <h2 className="text-[clamp(40px,8vw,100px)] font-light text-white tracking-wider drop-shadow-lg uppercase">
             Experience
           </h2>
         </div>
 
         {/* Logo bands - take up most of the screen */}
-        <div ref={contentRef} className="space-y-5 overflow-hidden py-4">
+        <div ref={contentRef} className="space-y-3 lg:space-y-5 overflow-hidden py-4">
           {/* Row 1 - moves left */}
           <div className="relative overflow-visible">
             <div
               ref={row1Ref}
-              className="flex gap-5 whitespace-nowrap"
+              className="flex gap-3 lg:gap-5 whitespace-nowrap"
               style={{ width: 'fit-content' }}
             >
               {[...row1Clients, ...row1Clients, ...row1Clients, ...row1Clients].map((client, i) => (
@@ -200,7 +202,7 @@ const ClientsSection = ({ className = '' }: ClientsSectionProps) => {
           <div className="relative overflow-visible">
             <div
               ref={row2Ref}
-              className="flex gap-5 whitespace-nowrap"
+              className="flex gap-3 lg:gap-5 whitespace-nowrap"
               style={{ width: 'fit-content' }}
             >
               {[...row2Clients, ...row2Clients, ...row2Clients, ...row2Clients].map((client, i) => (
@@ -213,7 +215,7 @@ const ClientsSection = ({ className = '' }: ClientsSectionProps) => {
           <div className="relative overflow-visible">
             <div
               ref={row3Ref}
-              className="flex gap-5 whitespace-nowrap"
+              className="flex gap-3 lg:gap-5 whitespace-nowrap"
               style={{ width: 'fit-content' }}
             >
               {[...row3Clients, ...row3Clients, ...row3Clients, ...row3Clients].map((client, i) => (

@@ -3,6 +3,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ChevronDown } from 'lucide-react';
 import { siteConfig } from '../content.config';
+import { SCROLL_MOTION_QUERY } from '../lib/utils';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -15,8 +16,7 @@ const HeroSection = ({ className = '' }: HeroSectionProps) => {
   const cityRef = useRef<HTMLDivElement>(null);
   const headlineRef = useRef<HTMLDivElement>(null);
   const subheadlineRef = useRef<HTMLParagraphElement>(null);
-  const ctaRef = useRef<HTMLDivElement>(null);
-  const scrollHintRef = useRef<HTMLDivElement>(null);
+  const scrollHintRef = useRef<HTMLButtonElement>(null);
 
   // Entrance animation on load
   useEffect(() => {
@@ -48,13 +48,6 @@ const HeroSection = ({ className = '' }: HeroSectionProps) => {
       );
 
       tl.fromTo(
-        ctaRef.current,
-        { y: 12, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.6 },
-        0.75
-      );
-
-      tl.fromTo(
         scrollHintRef.current,
         { opacity: 0 },
         { opacity: 1, duration: 0.4 },
@@ -74,7 +67,8 @@ const HeroSection = ({ className = '' }: HeroSectionProps) => {
   }, []);
 
   useLayoutEffect(() => {
-    const ctx = gsap.context(() => {
+    const mm = gsap.matchMedia();
+    mm.add(SCROLL_MOTION_QUERY, () => {
       const scrollTl = gsap.timeline({
         scrollTrigger: {
           trigger: sectionRef.current,
@@ -84,7 +78,7 @@ const HeroSection = ({ className = '' }: HeroSectionProps) => {
           scrub: 1,
           anticipatePin: 1,
           onLeaveBack: () => {
-            gsap.set([headlineRef.current, subheadlineRef.current, ctaRef.current], {
+            gsap.set([headlineRef.current, subheadlineRef.current], {
               opacity: 1,
               y: 0,
               x: 0,
@@ -110,13 +104,6 @@ const HeroSection = ({ className = '' }: HeroSectionProps) => {
       );
 
       scrollTl.fromTo(
-        ctaRef.current,
-        { y: 0, opacity: 1 },
-        { y: '-30px', opacity: 0.5, ease: 'power2.in' },
-        0.74
-      );
-
-      scrollTl.fromTo(
         cityRef.current,
         { y: 0, opacity: 1 },
         { y: '-25px', opacity: 0.5, ease: 'power2.in' },
@@ -131,7 +118,7 @@ const HeroSection = ({ className = '' }: HeroSectionProps) => {
       );
     }, sectionRef);
 
-    return () => ctx.revert();
+    return () => mm.revert();
   }, []);
 
   const scrollToCapabilities = () => {
@@ -194,24 +181,15 @@ const HeroSection = ({ className = '' }: HeroSectionProps) => {
           {siteConfig.hero.subheadline}
         </p>
 
-        {/* CTAs */}
-        <div ref={ctaRef} className="flex flex-col sm:flex-row gap-4 opacity-0 flex-wrap justify-center">
-          <button
-            onClick={scrollToCapabilities}
-            className="border border-white/40 text-white px-8 py-4 rounded-full font-semibold text-sm hover:bg-white/15 transition-all backdrop-blur-sm"
-          >
-            {siteConfig.hero.secondaryCta}
-          </button>
-        </div>
-      </div>
-
-      {/* Scroll hint */}
-      <div
-        ref={scrollHintRef}
-        className="absolute bottom-[5%] left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-0"
-      >
-        <span className="text-white/60 text-xs label-small">{siteConfig.hero.scrollHint}</span>
-        <ChevronDown size={16} className="text-white/60" />
+        {/* Scroll hint */}
+        <button
+          ref={scrollHintRef}
+          onClick={scrollToCapabilities}
+          aria-label="Scroll down"
+          className="p-2 rounded-full border border-white/20 opacity-0 text-white/60 hover:text-white hover:border-white/40 transition-colors [-webkit-tap-highlight-color:transparent]"
+        >
+          <ChevronDown size={22} strokeWidth={1.75} />
+        </button>
       </div>
     </section>
   );
