@@ -180,17 +180,17 @@ const HeroSection = ({ className = '' }: HeroSectionProps) => {
         >
           {siteConfig.hero.subheadline}
         </p>
-
-        {/* Scroll hint */}
-        <button
-          ref={scrollHintRef}
-          onClick={scrollToCapabilities}
-          aria-label="Scroll down"
-          className="p-2 rounded-full border border-white/20 opacity-0 text-white/60 hover:text-white hover:border-white/40 transition-colors [-webkit-tap-highlight-color:transparent]"
-        >
-          <ChevronDown size={22} strokeWidth={1.75} />
-        </button>
       </div>
+
+      {/* Scroll hint */}
+      <button
+        ref={scrollHintRef}
+        onClick={scrollToCapabilities}
+        aria-label="Scroll down"
+        className="absolute z-20 bottom-6 left-1/2 -translate-x-1/2 p-2 rounded-full bg-black/70 border border-white/30 backdrop-blur-sm opacity-0 text-white/90 hover:text-white hover:border-white/50 transition-colors [-webkit-tap-highlight-color:transparent]"
+      >
+        <ChevronDown size={22} strokeWidth={1.75} />
+      </button>
     </section>
   );
 };
